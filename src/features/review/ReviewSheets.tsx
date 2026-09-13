@@ -69,7 +69,7 @@ export function IssueInspectorSheet({ open, onOpenChange, locale, t, issue, inde
               <Field><FieldLabel>{t.labels}</FieldLabel><LabelsCombobox projectKey={payload.project} options={labelOptions} value={issue.labels ?? []} onValueChange={(labels) => onUpdate({ labels })} placeholder={t.labelSearch} emptyLabel={t.labelEmpty} createLabel={(label) => `${t.createLabel}: ${label}`} loadingLabel={t.loadingLabels} /></Field>
               <Field><FieldLabel>{t.ref}</FieldLabel><Input value={issue.ref ?? ""} onChange={(event: ChangeEvent<HTMLInputElement>) => onUpdate({ ref: event.target.value || undefined })} placeholder="phase-2" /></Field>
               <Field><FieldLabel>{t.description}</FieldLabel><RichTextEditor value={issue.description ?? ""} onChange={(description) => onUpdate({ description })} helpText={t.richHelp} /></Field>
-              <AttachmentPicker files={attachments} onChange={onAttachments} label={t.addAttachment} helper={t.attachmentHelp} addLabel={t.addAttachment} />
+              <AttachmentPicker files={attachments} onChange={onAttachments} label={t.addAttachment} helper={t.attachmentHelp} addLabel={t.addAttachment} dropLabel={t.attachmentDrop} dropActiveLabel={t.attachmentDropActive} formatHint={t.attachmentTypes} />
             </div>
           )}
         </SheetBody>

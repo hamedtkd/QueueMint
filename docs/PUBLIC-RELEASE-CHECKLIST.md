@@ -72,3 +72,13 @@ Do not tag final `v1.0.0` until the fresh install, upgrade test, permission/priv
 - Smart Assistant Apply converts common Markdown formatting to Jira wiki formatting before the visual editor renders it.
 - Quick Issue Sprint selector contains sprints only; Backlog remains available through Placement.
 
+
+## RC4 attachment regression checks
+
+- Quick Issue accepts supported images/files by both click-to-browse and desktop drag-and-drop.
+- Dragging over the attachment surface shows a visible active drop state before the file is added.
+- Review and Capture evidence attachment surfaces keep the same shared drag-and-drop behavior.
+- Dropped files use the same allowlist as the picker: PNG, JPG/JPEG, WEBP, PDF, WEBM, TXT, LOG, and JSON.
+- Unsupported, duplicate, oversized, over-count, or over-total-limit dropped files are not added.
+- Image drops render a preview and removing an attachment does not affect the remaining files.
+- Created Jira issues receive dropped files through the existing attachment upload path.

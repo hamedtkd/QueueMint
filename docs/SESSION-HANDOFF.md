@@ -4,7 +4,7 @@ Use this file when starting a new ChatGPT, coding-agent, or developer session. R
 
 ## Current state
 
-Current release branch candidate: **v1.0.0 RC3**, based on the completed v0.27.0 product feature set.
+Current release branch candidate: **v1.0.0 RC4**, based on the completed v0.27.0 product feature set.
 
 The architecture refactor is complete. The strict 300-line production code limit has no exceptions. `App.tsx` and `Popup.tsx` are orchestration/composition layers rather than monoliths.
 
@@ -119,13 +119,14 @@ For exact current detail, read `docs/CAPABILITIES.md`.
 - Command Palette keyboard behavior must continue to skip disabled commands and keep Escape/Arrow/Home/End/Enter navigation accessible.
 
 
-## v1.0 RC3 release-candidate fixes
+## v1.0 RC3/RC4 release-candidate fixes
 
 - Keep `Ctrl+Shift+K` / `Command+Shift+K` as the primary Command Layer shortcut, but also keep `Alt+Shift+K` as a fallback. Chrome can leave a suggested extension shortcut unassigned when another installed QueueMint build or extension already owns it.
 - The background command now opens/focuses QueueMint before sending the palette message, so a global shortcut is useful even when the workspace tab is not already focused.
 - `RichTextEditor` is now a visual content-editable surface. Users do not edit raw Jira wiki markers directly. Formatting is rendered in place, active toolbar controls are highlighted from the current selection, and the editor serializes back to Jira wiki markup before passing the value into existing Jira flows. Ctrl/Cmd+B and Ctrl/Cmd+I remain supported.
 - Smart Assistant must request Jira wiki formatting and normalize common Markdown before Apply. Do not send raw `**bold**`/backtick Markdown into Jira descriptions.
 - Backlog is a placement, not a sprint. Quick Issue already has a Placement control, so its Sprint selector must not contain Backlog. Capture has one combined routing control, so its label explicitly says Sprint / Backlog.
+- Desktop drag-and-drop for attachments is handled by the shared `AttachmentPicker`. Keep dropped files on the same allowlist, size/count limits, preview, duplicate guard, and Jira upload path as files chosen through the picker.
 
 ## Architecture rules
 
@@ -152,7 +153,7 @@ A phase should not be considered complete until these pass on a normal developme
 
 Current phase:
 
-- **v1.0 Public Release**: RC3 keeps the RC1/RC2 permission, shortcut, formatting, and routing hardening, and replaces the raw-plus-preview description UI with one visual Jira editor. Remaining work is final clean-profile/upgrade validation, recorded critical-flow smoke tests, Store assets/privacy form, and final security review.
+- **v1.0 Public Release**: RC4 keeps the RC1-RC3 hardening and adds shared attachment drag-and-drop without changing the Jira upload path. Remaining work is final clean-profile/upgrade validation, recorded critical-flow smoke tests, Store assets/privacy form, and final security review.
 
 Read `docs/ROADMAP.md` for the full reasoning and non-goals.
 

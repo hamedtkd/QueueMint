@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.0.0-rc.4 - Attachment drag and drop
+
+- Added drag-and-drop attachment intake for images and supported evidence files in Quick Issue, Review, and Capture evidence flows.
+- Added a clear drop-zone state so users can drag files from the desktop or click the same surface to browse.
+- Dragged files now use the same type, per-file size, total-size, count, duplicate, preview, removal, and Jira upload path as picked files.
+- Explicitly validates drag-and-drop file types because the browser file-input `accept` filter does not protect dropped files.
+
 ## 1.0.0-rc.3 - Visual description editing
 
 - Replaced the split raw Jira-wiki textarea plus preview with a single editable visual description surface in every flow that uses `RichTextEditor`.

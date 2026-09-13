@@ -4,7 +4,7 @@ QueueMint is a Chrome/Edge companion for Jira. It makes the work around Jira fas
 
 The product focuses on workflows that are slow, repetitive, fragmented, or awkward in the native Jira UI: evidence-rich bug capture, fast issue creation, safe bulk actions, reusable macros, command-driven actions, and personal productivity shortcuts.
 
-Current release candidate: **v1.0.0 RC3**.
+Current release candidate: **v1.0.0 RC4**.
 
 ## Product principle
 
@@ -42,6 +42,10 @@ The complete current feature inventory is in [docs/CAPABILITIES.md](docs/CAPABIL
 The Command Layer uses **Ctrl+Shift+K** on Windows/Linux and **Command+Shift+K** on macOS because Chrome reserves Ctrl+K for the address bar. QueueMint also registers **Alt+Shift+K** as a fallback for fresh installs where another extension already owns the primary shortcut.
 
 Daily-use polish now includes persistent favorite commands, recent project/board context, a compact active-sprint summary that can be copied for Slack or meetings, and portable backup/restore for QueueMint preferences and reusable workflows. Backup files intentionally exclude the Smart Assistant API key and working data. Command navigation also skips disabled commands and supports Home/End in addition to arrows and Enter.
+
+## v1.0 RC4 - Drag and drop attachments
+
+Attachment surfaces now accept both desktop drag-and-drop and normal file-picker selection. Images and supported evidence files use one shared validation and upload path, with visual drag-over feedback, duplicate protection, previews where available, and the same size/count limits.
 
 ## v1.0 RC3 - Visual Jira description editor
 

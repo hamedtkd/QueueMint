@@ -31,23 +31,28 @@
 }
 
 .qm-attachment-compact > [data-slot="button"] {
-  min-height: 42px !important;
-  height: 42px !important;
-  width: auto !important;
-  border-style: solid !important;
-  border-radius: 8px !important;
-  background: var(--card) !important;
-  padding-inline: 12px !important;
+  min-height: 58px !important;
+  height: auto !important;
+  width: 100% !important;
+  border-style: dashed !important;
+  border-radius: 9px !important;
+  background: var(--qm-surface-subtle) !important;
+  padding: 9px 12px !important;
 }
 
 .qm-attachment-compact > [data-slot="button"] > span:first-child {
-  width: 28px;
-  height: 28px;
+  width: 30px;
+  height: 30px;
   box-shadow: none;
 }
 
 .qm-attachment-compact > [data-slot="button"] span span:last-child {
-  display: none;
+  display: block;
+}
+
+.qm-attachment-compact > [data-slot="button"][data-drag-active="true"] {
+  border-color: var(--primary) !important;
+  background: var(--qm-primary-soft) !important;
 }
 
 .qm-add-batch-shortcut {
@@ -73,15 +78,6 @@
   width: 100%;
 }
 
-.qm-attachment-compact > [data-slot="button"] {
-  min-height: 36px !important;
-  height: 36px !important;
-}
-
-.qm-attachment-compact > [data-slot="button"] > span:first-child {
-  width: 24px;
-  height: 24px;
-}
 
 .qm-toolbar-divider {
   width: 1px;
