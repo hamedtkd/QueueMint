@@ -1,5 +1,22 @@
 # Changelog
 
+## 1.0.0-rc.3 - Visual description editing
+
+- Replaced the split raw Jira-wiki textarea plus preview with a single editable visual description surface in every flow that uses `RichTextEditor`.
+- Bold, italic, bullet lists, numbered lists, quote, inline code, and links now render directly while the user edits.
+- Formatting toolbar buttons expose active state from the current caret/selection, so selected bold/italic/list/etc. state is visible like a normal rich-text editor.
+- Kept Ctrl/Cmd+B and Ctrl/Cmd+I plus list keyboard shortcuts while serializing the visual DOM back to Jira wiki markup for the existing Jira transport.
+- Plain-text paste is enforced so unsupported external HTML does not leak into Jira descriptions.
+
+## 1.0.0-rc.2 - Editor and shortcut reliability
+
+- Added a second Command Layer shortcut, `Alt+Shift+K`, so a fresh QueueMint install still has a working global shortcut when Chrome cannot assign `Ctrl+Shift+K` because another extension profile/install already owns it.
+- Global Command Layer shortcuts now focus/open the QueueMint workspace before revealing the palette, while the in-app listener supports both primary and fallback shortcuts.
+- Added Jira wiki formatting preview plus `Ctrl/Cmd+B` and `Ctrl/Cmd+I` editor shortcuts for issue descriptions.
+- Smart Assistant now requests Jira wiki formatting and normalizes common Markdown bold, heading, list, and inline-code syntax before applying a suggestion.
+- Capture issue descriptions now use the same rich description editor as Quick Issue.
+- Removed Backlog from the Quick Issue Sprint selector because placement is already chosen separately; the Capture form labels its combined control as Sprint / Backlog instead.
+
 ## 1.0.0-rc.1 - Public release hardening
 
 - Added a public privacy policy and support guide.

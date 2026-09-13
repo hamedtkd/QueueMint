@@ -25,6 +25,7 @@ Use a new Chrome/Edge profile with no previous QueueMint storage:
 - close/reopen the popup and verify Capture recovery
 - open Manage Jira and perform a preview-first bulk action
 - open Command Layer with Ctrl+Shift+K / Command+Shift+K
+- with another QueueMint build holding the primary shortcut, verify Alt+Shift+K opens the RC Command Layer
 - confirm local Smart Draft works with AI disabled
 
 ## Upgrade test
@@ -62,3 +63,12 @@ Complete the Chrome Web Store listing and privacy tabs before publishing. Use `s
 ## Release decision
 
 Do not tag final `v1.0.0` until the fresh install, upgrade test, permission/privacy audit, and critical Jira/Capture smoke tests are recorded as passed.
+
+## RC3 editor/routing regression checks
+
+- Quick Issue and Capture descriptions show formatted content directly in one editable visual surface, with no raw wiki pane plus separate preview.
+- Ctrl/Cmd+B and Ctrl/Cmd+I work and the corresponding toolbar button becomes active while the caret/selection is formatted.
+- Bullet/numbered list, quote, inline-code, and link controls round-trip through Jira wiki serialization.
+- Smart Assistant Apply converts common Markdown formatting to Jira wiki formatting before the visual editor renders it.
+- Quick Issue Sprint selector contains sprints only; Backlog remains available through Placement.
+

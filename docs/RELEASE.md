@@ -53,6 +53,9 @@ At minimum:
 - evidence attachments upload
 - diagnostics remain opt-in
 - Quick Issue creates a Jira issue
+- description Ctrl/Cmd+B and Ctrl/Cmd+I produce Jira wiki formatting and the preview renders it
+- Smart Assistant descriptions do not leave raw Markdown `**bold**` or backticks after Apply
+- Quick Issue Sprint selector does not list Backlog after Sprint placement is chosen
 - Manage Jira loads
 - Jira Power Tools use the current selection when present and the current filtered scope otherwise
 - unassigned ownership Power Tool stages assignment to the connected Jira user without writing before Preview
@@ -63,6 +66,7 @@ At minimum:
 - Bulk Edit preview works
 - Bulk Edit preview shows every affected Jira issue key
 - Ctrl+Shift+K opens the Command Layer without Chrome focusing the address bar
+- Alt+Shift+K opens the Command Layer when the primary shortcut is unavailable/conflicted
 - favorite commands persist after reload
 - recent project/board commands appear after context switching
 - portable backup export/import restores preferences and reusable workflows without exporting the Smart Assistant API key
@@ -100,6 +104,6 @@ Before v1.0 also require:
 
 The GitHub `Release package` workflow runs on version tags and manual dispatch. It verifies the source, builds QueueMint, zips the contents of `dist/` so `manifest.json` sits at the archive root, uploads the package as a workflow artifact, and attaches it to the matching GitHub Release for tag runs.
 
-For v1.0 candidates, use a semver tag such as `v1.0.0-rc.1`. The extension manifest itself uses numeric `version: 1.0.0` plus `version_name: 1.0.0 RC1`, because Chrome extension version fields accept numeric dot-separated components.
+For v1.0 candidates, use a semver tag such as `v1.0.0-rc.3`. The extension manifest itself uses numeric `version: 1.0.0` plus `version_name: 1.0.0 RC3`, because Chrome extension version fields accept numeric dot-separated components.
 
 Before final `v1.0.0`, complete `docs/PUBLIC-RELEASE-CHECKLIST.md`.

@@ -4,7 +4,7 @@ import { toast } from "sonner"
 import { findPotentialDuplicates } from "@/lib/intelligence"
 import { searchRecentProjectIssues } from "@/lib/jira"
 import { buildCapturePreflight, buildSmartCaptureSuggestion, type SmartTemplateId } from "@/lib/smart-capture"
-import { buildAssistantDescription, type SmartAssistantSuggestion } from "@/lib/smart-assistant"
+import { buildAssistantDescription, normalizeJiraWikiFormatting, type SmartAssistantSuggestion } from "@/lib/smart-assistant"
 import type { QueueMintPageContext } from "@/lib/capture"
 import type { AppLocale, JiraMetadata, JiraProject } from "@/types"
 import type { PopupCopy } from "./popup-copy"
@@ -85,7 +85,7 @@ export function usePopupSmart({ locale, t, form, captureContext, finalScreenshot
 
   function applySuggestion() {
     if (!form.summary.trim() || /^bug:\s*/i.test(form.summary.trim())) form.setSummary(smartSuggestion.summary)
-    if (!form.description.trim()) form.setDescription(smartSuggestion.description)
+    if (!form.description.trim()) form.setDescription(normalizeJiraWikiFormatting(smartSuggestion.description))
     if (!form.priority && smartSuggestion.priority) form.setPriority(smartSuggestion.priority)
     if (smartSuggestion.issueType && form.issueTypes.some((item) => item.name === smartSuggestion.issueType)) form.changeIssueType(smartSuggestion.issueType)
     if (!form.component && smartSuggestion.component && form.projectInfo?.components?.some((item) => item.name === smartSuggestion.component)) form.setComponent(smartSuggestion.component)

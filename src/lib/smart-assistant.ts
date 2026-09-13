@@ -164,6 +164,26 @@ const schema = {
   required: ["summary", "description", "stepsToReproduce", "expectedResult", "actualResult", "issueType", "priority", "component", "labels", "epic", "assignee", "duplicates"],
 }
 
+export function normalizeJiraWikiFormatting(value: string) {
+  return value
+    .replace(/^\s*(#{1,6})\s+(.+)$/gm, (_, hashes: string, text: string) => `h${hashes.length}. ${text}`)
+    .replace(/^\s*[-+]\s+/gm, "* ")
+    .replace(/^\s*\d+[.)]\s+/gm, "# ")
+    .replace(/\*\*([^*\n]+)\*\*/g, "*$1*")
+    .replace(/__([^_\n]+)__/g, "*$1*")
+    .replace(/`([^`\n]+)`/g, "{{$1}}")
+}
+
+function normalizeSuggestionFormatting(suggestion: SmartAssistantSuggestion): SmartAssistantSuggestion {
+  return {
+    ...suggestion,
+    description: normalizeJiraWikiFormatting(suggestion.description),
+    stepsToReproduce: suggestion.stepsToReproduce.map(normalizeJiraWikiFormatting),
+    expectedResult: normalizeJiraWikiFormatting(suggestion.expectedResult),
+    actualResult: normalizeJiraWikiFormatting(suggestion.actualResult),
+  }
+}
+
 function outputText(response: unknown) {
   const data = response as { output?: Array<{ content?: Array<{ type?: string; text?: string }> }> }
   for (const item of data.output ?? []) for (const content of item.content ?? []) if (content.type === "output_text" && content.text) return content.text
@@ -175,7 +195,7 @@ export async function generateSmartAssistant(settings: SmartAssistantSettings, i
   if (!Object.values(input.options).some(Boolean)) throw new Error("Choose at least one data source for Smart Assistant.")
   const content: Array<Record<string, unknown>> = [{
     type: "input_text",
-    text: `You are QueueMint Smart Assistant. Draft a concise, high-quality Jira issue from the supplied evidence. Do not invent facts. Empty string means no reliable suggestion. Use only exact Jira metadata values when metadata is supplied. Duplicate keys must come from the supplied duplicate candidates and scores must be 0 to 100. Write issue text in the same language as the supplied draft/context, otherwise use ${input.locale === "fa" ? "Persian" : "English"}.\n\nINPUT:\n${JSON.stringify(buildPayload(input))}`,
+    text: `You are QueueMint Smart Assistant. Draft a concise, high-quality Jira issue from the supplied evidence. Do not invent facts. Empty string means no reliable suggestion. Use only exact Jira metadata values when metadata is supplied. Duplicate keys must come from the supplied duplicate candidates and scores must be 0 to 100. Write issue text in the same language as the supplied draft/context, otherwise use ${input.locale === "fa" ? "Persian" : "English"}. If formatting is useful, use Jira wiki markup only: *bold*, _italic_, {{code}}, * bullet items, # numbered items, and h2. headings. Do not use Markdown **bold**, backticks, or Markdown list markers.\n\nINPUT:\n${JSON.stringify(buildPayload(input))}`,
   }]
   if (input.options.screenshot && input.screenshot) content.push({ type: "input_image", image_url: await downscaleImage(input.screenshot), detail: "low" })
   const response = await fetch(OPENAI_URL, {
@@ -187,16 +207,16 @@ export async function generateSmartAssistant(settings: SmartAssistantSettings, i
   if (!response.ok) throw new Error((body as { error?: { message?: string } }).error?.message || `OpenAI request failed (${response.status}).`)
   const text = outputText(body)
   if (!text) throw new Error("OpenAI returned no structured suggestion.")
-  return JSON.parse(text) as SmartAssistantSuggestion
+  return normalizeSuggestionFormatting(JSON.parse(text) as SmartAssistantSuggestion)
 }
 
 export function buildAssistantDescription(suggestion: SmartAssistantSuggestion, locale: "en" | "fa") {
   const stepsTitle = locale === "fa" ? "مراحل بازتولید" : "Steps to reproduce"
   const expectedTitle = locale === "fa" ? "نتیجه مورد انتظار" : "Expected result"
   const actualTitle = locale === "fa" ? "نتیجه فعلی" : "Actual result"
-  const sections = [suggestion.description.trim()]
-  if (suggestion.stepsToReproduce.length) sections.push(`${stepsTitle}:\n${suggestion.stepsToReproduce.map((step, index) => `${index + 1}. ${step}`).join("\n")}`)
-  if (suggestion.expectedResult.trim()) sections.push(`${expectedTitle}:\n${suggestion.expectedResult.trim()}`)
-  if (suggestion.actualResult.trim()) sections.push(`${actualTitle}:\n${suggestion.actualResult.trim()}`)
+  const sections = [normalizeJiraWikiFormatting(suggestion.description.trim())]
+  if (suggestion.stepsToReproduce.length) sections.push(`*${stepsTitle}:*\n${suggestion.stepsToReproduce.map((step) => `# ${normalizeJiraWikiFormatting(step).replace(/^\s*[#*]\s+/, "")}`).join("\n")}`)
+  if (suggestion.expectedResult.trim()) sections.push(`*${expectedTitle}:*\n${normalizeJiraWikiFormatting(suggestion.expectedResult.trim())}`)
+  if (suggestion.actualResult.trim()) sections.push(`*${actualTitle}:*\n${normalizeJiraWikiFormatting(suggestion.actualResult.trim())}`)
   return sections.filter(Boolean).join("\n\n")
 }

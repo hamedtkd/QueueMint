@@ -32,7 +32,10 @@ for (const required of ["https://*/*", "http://*/*"]) if (!optionalHosts.has(req
 if (optionalHosts.has("<all_urls>")) fail("Use scheme-specific optional host patterns instead of <all_urls>.")
 
 const shortcut = manifest.commands?.["open-command-palette"]?.suggested_key?.default
+const fallbackShortcut = manifest.commands?.["open-command-palette-fallback"]?.suggested_key?.default
 if (shortcut === "Ctrl+K") fail("Ctrl+K is reserved by Chrome; keep the extension command on Ctrl+Shift+K.")
+if (shortcut !== "Ctrl+Shift+K") fail("Primary Command Layer shortcut must remain Ctrl+Shift+K for Windows/Linux.")
+if (!fallbackShortcut) fail("A fallback Command Layer shortcut is required when Chrome cannot assign the primary shortcut.")
 if (!manifest.background?.service_worker || !exists(`public/${manifest.background.service_worker}`)) fail("Manifest background service worker is missing from public/.")
 
 for (const relative of ["PRIVACY.md", "SECURITY.md", "SUPPORT.md", "docs/PERMISSIONS.md", "docs/COMPATIBILITY.md", "docs/PUBLIC-RELEASE-CHECKLIST.md", "store/CHROME-WEB-STORE.md"]) {

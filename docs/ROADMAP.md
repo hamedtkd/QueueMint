@@ -111,7 +111,12 @@ Performance work in this phase stayed conservative: no new runtime dependency wa
 
 Goal: publish a stable Jira-agnostic QueueMint release for broader Chrome/Edge use.
 
-RC1 hardening delivered:
+RC1-RC3 hardening delivered:
+
+- clean-profile Command Layer fallback shortcut and workspace focus behavior.
+- Jira visual description editing with active formatting controls, keyboard shortcuts, and Jira wiki serialization behind the visual surface.
+- Smart Assistant Markdown-to-Jira-wiki normalization before Apply.
+- Sprint/Backlog routing semantics cleanup in Quick Issue and Capture.
 
 - documented conservative browser/Jira compatibility matrix
 - least-privilege browser permission audit and automated permission guard

@@ -38,9 +38,16 @@
         "mac": "Command+Shift+K"
       },
       "description": "Open the QueueMint command palette"
+    },
+    "open-command-palette-fallback": {
+      "suggested_key": {
+        "default": "Alt+Shift+K",
+        "mac": "Alt+Shift+K"
+      },
+      "description": "Open the QueueMint command palette (fallback shortcut)"
     }
   },
-  "version_name": "1.0.0 RC1",
+  "version_name": "1.0.0 RC3",
   "short_name": "QueueMint",
   "homepage_url": "https://github.com/hamedtkd/QueueMint"
 }

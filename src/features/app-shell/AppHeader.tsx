@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react"
 import { ChevronDown, Command, LoaderCircle, Settings2 } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
@@ -33,6 +34,16 @@ export function AppHeader({
   onSettings: () => void
   onCommands: () => void
 }) {
+  const [commandShortcut, setCommandShortcut] = useState("Ctrl/⌘ Shift K")
+  useEffect(() => {
+    if (typeof chrome === "undefined" || !chrome.commands?.getAll) return
+    void chrome.commands.getAll().then((commands) => {
+      const primary = commands.find((item) => item.name === "open-command-palette")?.shortcut
+      const fallback = commands.find((item) => item.name === "open-command-palette-fallback")?.shortcut
+      setCommandShortcut(primary || fallback || "Click to open")
+    }).catch(() => undefined)
+  }, [])
+
   const initials = metadata?.user?.displayName
     ?.split(/\s+/)
     .filter(Boolean)
@@ -55,7 +66,7 @@ export function AppHeader({
             {loadingConnection ? <LoaderCircle className="size-3 animate-spin" /> : <span className="qm-status-dot" />}
             <span>{metadata ? t.connected : t.disconnected}</span>
           </button>
-          <Button variant="ghost" size="sm" className="qm-topbar-command hidden gap-2 md:inline-flex" onClick={onCommands} aria-label={t.openCommandPalette} title={t.openCommandPalette}><Command className="size-[17px]" /><span className="text-xs">Ctrl/⌘ Shift K</span></Button>
+          <Button variant="ghost" size="sm" className="qm-topbar-command hidden gap-2 md:inline-flex" onClick={onCommands} aria-label={t.openCommandPalette} title={t.openCommandPalette}><Command className="size-[17px]" /><span className="text-xs">{commandShortcut}</span></Button>
           <Button variant="ghost" size="icon" className="qm-topbar-icon md:hidden" onClick={onCommands} aria-label={t.openCommandPalette} title={t.openCommandPalette}><Command className="size-[18px]" /></Button>
           <AppearanceQuickControls locale={locale} theme={theme} themeLabel={t.theme} languageLabel={t.language} onTheme={onTheme} onLocale={onLocale} />
           <Button variant="ghost" size="icon" className="qm-topbar-icon" onClick={onSettings} aria-label={t.settings} title={t.settings}><Settings2 className="size-[18px]" /></Button>

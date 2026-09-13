@@ -111,7 +111,10 @@ export function useAppLifecycle(options: LifecycleOptions) {
   }, [o.liveBulkOpen, o.liveSelectedKeys, o.liveIssues])
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
-      if ((event.ctrlKey || event.metaKey) && event.shiftKey && event.key.toLowerCase() === "k") { event.preventDefault(); o.setCommandOpen((current) => !current) }
+      const key = event.key.toLowerCase()
+      const primary = (event.ctrlKey || event.metaKey) && event.shiftKey && key === "k"
+      const fallback = event.altKey && event.shiftKey && key === "k"
+      if (primary || fallback) { event.preventDefault(); event.stopPropagation(); o.setCommandOpen((current) => !current) }
     }
     window.addEventListener("keydown", onKeyDown); return () => window.removeEventListener("keydown", onKeyDown)
   }, [])

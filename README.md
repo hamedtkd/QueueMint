@@ -4,7 +4,7 @@ QueueMint is a Chrome/Edge companion for Jira. It makes the work around Jira fas
 
 The product focuses on workflows that are slow, repetitive, fragmented, or awkward in the native Jira UI: evidence-rich bug capture, fast issue creation, safe bulk actions, reusable macros, command-driven actions, and personal productivity shortcuts.
 
-Current version: **v0.27.0**.
+Current release candidate: **v1.0.0 RC3**.
 
 ## Product principle
 
@@ -32,16 +32,22 @@ See [Product direction](docs/PRODUCT.md) and [Roadmap](docs/ROADMAP.md).
 - Review and create issue batches safely before writing to Jira.
 - Manage Jira issues with filters, Saved Views, issue detail inspection, safe clone/move helpers, and bulk edit preview.
 - Reuse Saved Actions and safe Automation rules/macros through the same preview-first bulk-edit path.
-- Use the Ctrl+Shift+K Command Layer for navigation, selected-issue actions, sprint moves, Saved Actions, filtered Jira views, and project/board switching.
+- Use the Ctrl+Shift+K Command Layer for navigation, selected-issue actions, sprint moves, Saved Actions, filtered Jira views, and project/board switching. Alt+Shift+K is the fallback when Chrome cannot assign the primary shortcut.
 - Switch English/Persian and light/dark theme in the main workspace and Capture surfaces.
 
 The complete current feature inventory is in [docs/CAPABILITIES.md](docs/CAPABILITIES.md).
 
 ## v0.27.0 - Productivity and Polish
 
-The Command Layer now uses **Ctrl+Shift+K** on Windows/Linux and **Command+Shift+K** on macOS because Chrome reserves Ctrl+K for the address bar. QueueMint also registers the shortcut as an extension command and keeps the visible command button as a fallback.
+The Command Layer uses **Ctrl+Shift+K** on Windows/Linux and **Command+Shift+K** on macOS because Chrome reserves Ctrl+K for the address bar. QueueMint also registers **Alt+Shift+K** as a fallback for fresh installs where another extension already owns the primary shortcut.
 
 Daily-use polish now includes persistent favorite commands, recent project/board context, a compact active-sprint summary that can be copied for Slack or meetings, and portable backup/restore for QueueMint preferences and reusable workflows. Backup files intentionally exclude the Smart Assistant API key and working data. Command navigation also skips disabled commands and supports Home/End in addition to arrows and Enter.
+
+## v1.0 RC3 - Visual Jira description editor
+
+RC3 replaces the split raw-text plus preview description experience with one editable visual surface. Bold, italic, lists, quote, inline code, and links render directly while editing, toolbar buttons expose active formatting state, and Ctrl/Cmd+B plus Ctrl/Cmd+I keep Jira-like keyboard behavior. The stored value is still serialized to Jira wiki markup before QueueMint sends it through existing Jira creation flows.
+
+RC2 tightened global Command Layer shortcut conflicts, Smart Assistant formatting normalization, and Sprint/Backlog routing semantics. Quick Issue no longer shows Backlog inside a Sprint-only selector because Backlog is a placement choice, not a sprint.
 
 ## v1.0 RC1 - Public release hardening
 

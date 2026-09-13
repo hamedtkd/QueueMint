@@ -11,7 +11,7 @@ import {
 
 import { Button } from "@/components/ui/button"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/capture-select"
-import { Textarea } from "@/components/ui/textarea"
+import { RichTextEditor } from "@/components/rich-text-editor"
 import type { JiraBoard, JiraEpic, JiraMetadata, JiraProject, JiraSprint, JiraUser } from "@/types"
 import type { PopupCopy } from "./popup-copy"
 import { PopupFieldSection, PopupFieldShell } from "./PopupFieldShell"
@@ -64,7 +64,7 @@ export function PopupIssueMainFields(props: PopupIssueMainFieldsProps) {
           <SelectContent><SelectItem value="__none">{t.noBoard}</SelectItem>{boards.map((board) => <SelectItem key={board.id} value={String(board.id)}>{board.name}</SelectItem>)}</SelectContent>
         </Select>
       </PopupFieldShell>
-      <PopupFieldShell icon={CircleDot} label={t.sprint} hint={boardId && !sprints.length ? t.noSprint : undefined} tone="context" className="qm-field-span-2 qm-field-third">
+      <PopupFieldShell icon={CircleDot} label={`${t.sprint} / ${t.backlog}`} hint={boardId && !sprints.length ? t.noSprint : undefined} tone="context" className="qm-field-span-2 qm-field-third">
         <Select value={sprintId ? String(sprintId) : "__backlog"} onValueChange={(value) => props.onSprint(value === "__backlog" ? null : Number(value))} disabled={!boardId || isEpic}>
           <SelectTrigger><SelectValue placeholder={t.sprint} /></SelectTrigger>
           <SelectContent><SelectItem value="__backlog">{t.backlog}</SelectItem>{sprints.map((sprint) => <SelectItem key={sprint.id} value={String(sprint.id)}>{sprint.name} · {sprint.state}</SelectItem>)}</SelectContent>
@@ -108,7 +108,7 @@ export function PopupIssueMainFields(props: PopupIssueMainFieldsProps) {
 
     <PopupFieldSection icon={AlignLeft} title={t.detailsFields} className="qm-section-half">
       <PopupFieldShell icon={AlignLeft} label={t.description} tone="details" className="qm-field-span-2">
-        <Textarea value={description} onChange={(event) => props.onDescription(event.target.value)} className="min-h-24 resize-y" />
+        <RichTextEditor value={description} onChange={props.onDescription} minHeight={96} />
       </PopupFieldShell>
     </PopupFieldSection>
 

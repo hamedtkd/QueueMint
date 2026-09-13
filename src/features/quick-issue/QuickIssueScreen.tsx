@@ -173,7 +173,7 @@ export function QuickIssueScreen({
             {!isEpic && placement === "sprint" ? (
               <Field>
                 <FieldLabel>{t.sprint}</FieldLabel>
-                <SprintSelect sprints={sprints} value={sprintId} defaultSprint={payload?.defaults?.sprint} onValueChange={setSprintId} inheritedLabel={t.useDefault} backlogLabel={t.backlog} activeLabel={t.active} futureLabel={t.future} />
+                <SprintSelect sprints={sprints} value={sprintId} onValueChange={setSprintId} allowInherited={false} allowBacklog={false} noDefaultLabel={locale === "fa" ? "انتخاب اسپرینت" : "Select sprint"} activeLabel={t.active} futureLabel={t.future} />
               </Field>
             ) : null}
             {!isEpic ? (
