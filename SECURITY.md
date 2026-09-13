@@ -75,3 +75,10 @@ New Chrome permissions should be treated as product/security changes. Any future
 ## Portable backup boundary
 
 QueueMint portable backups intentionally exclude the Smart Assistant API key, activity history, working issue drafts, and last-created issue state. Backup import accepts only the QueueMint portable-backup schema and writes only the preference/workflow fields intended for transfer between installations.
+
+
+## v1.0 release guard
+
+`npm run check:release` is an automated policy gate. It verifies the intended required permission set, rejects static host permissions and selected high-risk permissions, checks the Manifest V3/version/description contract, scans production source for obvious committed credential patterns and dynamic code execution, and requires the public privacy/permission/support documents.
+
+This guard is defense in depth. It does not replace manual review of Jira endpoints, browser permission prompts, Store privacy disclosures, or the clean-profile/upgrade smoke tests.

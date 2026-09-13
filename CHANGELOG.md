@@ -1,5 +1,15 @@
 # Changelog
 
+## 1.0.0-rc.1 - Public release hardening
+
+- Added a public privacy policy and support guide.
+- Added a least-privilege browser permission audit and conservative browser/Jira compatibility matrix.
+- Added `npm run check:release` to validate the Manifest V3/version contract, required permission boundary, public release docs, obvious committed secrets, and dynamic-code hazards.
+- Added CI coverage for release branches and a tag-driven GitHub release ZIP workflow built from the exact `dist/` contents.
+- Added a Chrome Web Store listing, privacy disclosure, permission justification, and screenshot-plan draft.
+- Added a clean-profile/upgrade/public-release checklist.
+- Shortened the manifest description to fit Chrome's public manifest description limit and added release-candidate `version_name` plus project homepage metadata.
+
 ## 0.27.0 - Productivity and Polish
 
 - Replaced the browser-reserved Ctrl+K shortcut with Ctrl+Shift+K / Command+Shift+K and registered a Chrome extension command so the browser no longer steals the palette shortcut.

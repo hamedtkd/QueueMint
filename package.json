@@ -1,7 +1,7 @@
 {
   "name": "queuemint",
   "private": true,
-  "version": "0.27.0",
+  "version": "1.0.0-rc.1",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -11,7 +11,8 @@
     "font:install": "node ./scripts/install-samim.mjs",
     "check:architecture": "node ./scripts/check-file-size.mjs",
     "check": "npm run check:architecture && npm run typecheck",
-    "verify": "npm run check:architecture && npm run typecheck && npm run build"
+    "verify": "npm run check:architecture && npm run typecheck && npm run build && npm run check:release",
+    "check:release": "node ./scripts/check-release.mjs"
   },
   "dependencies": {
     "@base-ui/react": "1.7.0",

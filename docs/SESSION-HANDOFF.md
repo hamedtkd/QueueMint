@@ -4,11 +4,11 @@ Use this file when starting a new ChatGPT, coding-agent, or developer session. R
 
 ## Current state
 
-Current release: **v0.27.0**.
+Current release branch candidate: **v1.0.0 RC1**, based on the completed v0.27.0 product feature set.
 
 The architecture refactor is complete. The strict 300-line production code limit has no exceptions. `App.tsx` and `Popup.tsx` are orchestration/composition layers rather than monoliths.
 
-Capture Pro, Smart Assistant, Jira Power Tools, and Command Layer are complete. The current release completes **v0.27 Productivity & Polish**, fixing the Chrome shortcut collision and adding persistent favorites, recent context, portable backup/restore, sprint-share copy, and keyboard-accessibility polish.
+Capture Pro, Smart Assistant, Jira Power Tools, and Command Layer are complete. The product feature set through **v0.27 Productivity & Polish** is complete. The current work is v1.0 public-release hardening: permissions/privacy, compatibility, packaging/CI, clean-profile and upgrade validation, store preparation, and final security review.
 
 ## Product definition
 
@@ -141,9 +141,9 @@ A phase should not be considered complete until these pass on a normal developme
 
 ## Agreed future direction
 
-Next planned phase:
+Current phase:
 
-- **v1.0 Public Release**: Jira compatibility matrix, least-privilege permission/privacy audit, critical-flow tests, onboarding/store assets, CI release flow, upgrade/fresh-install testing, and final security review.
+- **v1.0 Public Release**: RC1 now contains the permission/privacy audit, release guard, compatibility/docs, Store listing draft, and tag packaging workflow. Remaining work is real clean-profile and upgrade validation, recorded critical-flow smoke tests, final Store assets/privacy form, and final security review.
 
 Read `docs/ROADMAP.md` for the full reasoning and non-goals.
 
@@ -161,3 +161,13 @@ Ask:
 ## Git/release state
 
 The repository contains GitHub CI configuration, contribution guidance, release guidance, changelog, product direction, capabilities, architecture, and roadmap documentation. `dist/` and `node_modules/` remain ignored and should not be committed.
+
+
+## v1.0 RC1 hardening notes
+
+- `scripts/check-release.mjs` is now a required release gate in addition to the 300-line architecture check, TypeScript, and Vite build.
+- Required Chrome permissions remain `storage`, `activeTab`, `scripting`, and `clipboardWrite`. Jira/OpenAI host access remains optional runtime access.
+- `PRIVACY.md`, `SUPPORT.md`, `docs/PERMISSIONS.md`, `docs/COMPATIBILITY.md`, and `docs/PUBLIC-RELEASE-CHECKLIST.md` are part of the public release contract.
+- `store/CHROME-WEB-STORE.md` is the canonical Store listing/privacy/permission-justification draft.
+- `.github/workflows/release.yml` creates the exact `dist/` ZIP for version tags. It does not publish to the Chrome Web Store automatically.
+- Do not tag final `v1.0.0` until clean-profile Chrome/Edge and upgrade-from-v0.27 validation have been recorded.

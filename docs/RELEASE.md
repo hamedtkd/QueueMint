@@ -18,6 +18,7 @@ npm install
 npm run check:architecture
 npm run typecheck
 npm run build
+npm run check:release
 git diff --check
 ```
 
@@ -93,3 +94,12 @@ Before v1.0 also require:
 - automated critical-path tests
 - clean fresh-profile install test
 - upgrade-from-previous-version test
+
+
+## Release candidate packaging
+
+The GitHub `Release package` workflow runs on version tags and manual dispatch. It verifies the source, builds QueueMint, zips the contents of `dist/` so `manifest.json` sits at the archive root, uploads the package as a workflow artifact, and attaches it to the matching GitHub Release for tag runs.
+
+For v1.0 candidates, use a semver tag such as `v1.0.0-rc.1`. The extension manifest itself uses numeric `version: 1.0.0` plus `version_name: 1.0.0 RC1`, because Chrome extension version fields accept numeric dot-separated components.
+
+Before final `v1.0.0`, complete `docs/PUBLIC-RELEASE-CHECKLIST.md`.

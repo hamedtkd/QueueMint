@@ -2,7 +2,7 @@ name: CI
 
 on:
   push:
-    branches: [main, develop]
+    branches: [main, develop, "release/**"]
   pull_request:
 
 jobs:
@@ -24,3 +24,5 @@ jobs:
         run: npm run typecheck
       - name: Build
         run: npm run build
+      - name: Release audit
+        run: npm run check:release

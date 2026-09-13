@@ -43,6 +43,12 @@ The Command Layer now uses **Ctrl+Shift+K** on Windows/Linux and **Command+Shift
 
 Daily-use polish now includes persistent favorite commands, recent project/board context, a compact active-sprint summary that can be copied for Slack or meetings, and portable backup/restore for QueueMint preferences and reusable workflows. Backup files intentionally exclude the Smart Assistant API key and working data. Command navigation also skips disabled commands and supports Home/End in addition to arrows and Enter.
 
+## v1.0 RC1 - Public release hardening
+
+The release branch adds a checked privacy/permission boundary, public privacy/support documents, a conservative browser/Jira compatibility matrix, a Chrome Web Store listing draft, and an automated release audit. Tagged builds can produce a GitHub release ZIP from the exact `dist/` contents.
+
+Run `npm run check:release` in addition to the normal architecture/typecheck/build gates before a public candidate is accepted.
+
 ## v0.26.0 - Command Layer
 
 In v0.26 the palette became a context-aware command interface instead of only a navigation menu. The browser-safe shortcut is now Ctrl+Shift+K as of v0.27. Commands reuse the existing QueueMint actions for assigning the current selection, opening or inspecting one selected issue, moving selected issues to backlog or an available sprint, applying Saved Actions, refreshing Jira context, and switching project or board.
@@ -138,6 +144,13 @@ The production build runs this guard before TypeScript and Vite.
 See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
 
 ## Repository documents
+
+- Privacy policy: `PRIVACY.md`
+- Support guide: `SUPPORT.md`
+- Permission audit: `docs/PERMISSIONS.md`
+- Compatibility matrix: `docs/COMPATIBILITY.md`
+- Public release checklist: `docs/PUBLIC-RELEASE-CHECKLIST.md`
+- Chrome Web Store draft: `store/CHROME-WEB-STORE.md`
 
 - [Capabilities](docs/CAPABILITIES.md): what QueueMint does today.
 - [Product direction](docs/PRODUCT.md): what QueueMint is and is not.

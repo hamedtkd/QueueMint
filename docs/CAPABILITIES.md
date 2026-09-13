@@ -267,3 +267,8 @@ Command search supports multiple words, and the palette groups results into navi
 - feature-oriented folders keep workflows separated.
 - Jira transport is kept outside visual components.
 - destructive or large mutations favor preview and explicit user confirmation.
+
+
+## Public release hardening
+
+The v1.0 release branch adds release-time validation and public documentation rather than new Jira business features: a permission audit, privacy/support docs, compatibility matrix, Store listing draft, and GitHub release-package workflow. Runtime product behavior remains the v0.27 capability set until final v1.0 smoke tests are complete.

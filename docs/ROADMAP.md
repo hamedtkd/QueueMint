@@ -107,21 +107,27 @@ Delivered:
 
 Performance work in this phase stayed conservative: no new runtime dependency was added and existing feature paths were reused. Broader automated bundle budgets belong with the v1.0 release pipeline.
 
-## v1.0 - Public release
+## v1.0 - Public release - in progress
 
 Goal: publish a stable Jira-agnostic QueueMint release for broader Chrome/Edge use.
 
-Release work:
+RC1 hardening delivered:
 
-- supported Jira matrix and documented compatibility
-- least-privilege browser permission audit
-- privacy policy and data-flow documentation
-- install/onboarding polish
-- store assets and listing copy
-- CI and release tagging
-- automated tests for critical Jira bridge and Capture flows
-- error/diagnostics guidance for support
-- final security review
+- documented conservative browser/Jira compatibility matrix
+- least-privilege browser permission audit and automated permission guard
+- public privacy policy, support guide, and data-boundary documentation
+- Chrome Web Store listing/permission-justification draft
+- release-source audit for manifest/version, risky permissions, obvious committed secrets, dynamic code execution, and required public docs
+- CI coverage for `release/**` branches
+- tag-driven GitHub release packaging of the exact built `dist/` directory
+
+Still required before final v1.0.0:
+
+- clean-profile Chrome and Edge install tests
+- upgrade test from v0.27.x with real persisted state
+- recorded critical Jira bridge, Capture, attachment, Bulk Edit, Command Layer, and optional Smart Assistant smoke tests
+- final store screenshots/assets and Developer Dashboard privacy disclosure
+- final security review and signed-off support matrix
 
 ## Permanently avoid unless product strategy changes
 
