@@ -2,6 +2,24 @@ import type { QueueMintPageDiagnostics } from "./types"
 
 const MAX_ERRORS = 30
 const MAX_NETWORK = 50
+const MAX_DIAGNOSTIC_URL_LENGTH = 600
+
+export function sanitizeDiagnosticUrl(value: string) {
+  const input = value.trim()
+  if (!input) return ""
+  if (input.startsWith("data:")) return "data:[redacted]"
+  try {
+    const url = new URL(input)
+    if (url.protocol === "http:" || url.protocol === "https:") {
+      return `${url.origin}${url.pathname}`.slice(0, MAX_DIAGNOSTIC_URL_LENGTH)
+    }
+    if (url.protocol === "blob:") return `blob:${url.origin}/[redacted]`
+    return `${url.protocol}[redacted]`
+  } catch {
+    return input.split(/[?#]/, 1)[0].slice(0, MAX_DIAGNOSTIC_URL_LENGTH)
+  }
+}
+
 
 export async function installPageDiagnostics(tabId: number) {
   if (!chrome.scripting?.executeScript) return
@@ -9,10 +27,23 @@ export async function installPageDiagnostics(tabId: number) {
     await chrome.scripting.executeScript({
       target: { tabId },
       func: () => {
-        const key = "__QUEUEMINT_DIAGNOSTICS_V1__"
+        const key = "__QUEUEMINT_DIAGNOSTICS_V2__"
         const root = window as unknown as Record<string, unknown>
         if (root[key]) return
         const state = { startedAt: new Date().toISOString(), errors: [] as Array<Record<string, unknown>> }
+        const sanitizeUrl = (value: string) => {
+          const input = value.trim()
+          if (!input) return ""
+          if (input.startsWith("data:")) return "data:[redacted]"
+          try {
+            const url = new URL(input)
+            if (url.protocol === "http:" || url.protocol === "https:") return `${url.origin}${url.pathname}`.slice(0, 600)
+            if (url.protocol === "blob:") return `blob:${url.origin}/[redacted]`
+            return `${url.protocol}[redacted]`
+          } catch {
+            return input.split(/[?#]/, 1)[0].slice(0, 600)
+          }
+        }
         const push = (entry: Record<string, unknown>) => {
           state.errors.push(entry)
           if (state.errors.length > 60) state.errors.splice(0, state.errors.length - 60)
@@ -20,11 +51,11 @@ export async function installPageDiagnostics(tabId: number) {
         window.addEventListener("error", (event) => {
           const target = event.target
           if (target instanceof HTMLElement) {
-            const source = (target as HTMLImageElement).currentSrc || (target as HTMLScriptElement).src || (target as HTMLLinkElement).href || ""
+            const source = sanitizeUrl((target as HTMLImageElement).currentSrc || (target as HTMLScriptElement).src || (target as HTMLLinkElement).href || "")
             push({ kind: "resource", message: `Resource failed to load${source ? `: ${source}` : ""}`, source, capturedAt: new Date().toISOString() })
             return
           }
-          push({ kind: "runtime", message: event.message || "Runtime error", source: event.filename || "", line: event.lineno || undefined, column: event.colno || undefined, capturedAt: new Date().toISOString() })
+          push({ kind: "runtime", message: event.message || "Runtime error", source: sanitizeUrl(event.filename || ""), line: event.lineno || undefined, column: event.colno || undefined, capturedAt: new Date().toISOString() })
         }, true)
         window.addEventListener("unhandledrejection", (event) => {
           const reason = event.reason instanceof Error ? event.reason.message : String(event.reason ?? "Unhandled promise rejection")
@@ -44,13 +75,26 @@ export async function collectPageDiagnostics(tabId: number): Promise<QueueMintPa
     const results = await chrome.scripting.executeScript({
       target: { tabId },
       func: () => {
-        const key = "__QUEUEMINT_DIAGNOSTICS_V1__"
+        const key = "__QUEUEMINT_DIAGNOSTICS_V2__"
         const root = window as unknown as Record<string, unknown>
         const state = root[key] as { startedAt?: string; errors?: Array<Record<string, unknown>> } | undefined
+        const sanitizeUrl = (value: string) => {
+          const input = value.trim()
+          if (!input) return ""
+          if (input.startsWith("data:")) return "data:[redacted]"
+          try {
+            const url = new URL(input)
+            if (url.protocol === "http:" || url.protocol === "https:") return `${url.origin}${url.pathname}`.slice(0, 600)
+            if (url.protocol === "blob:") return `blob:${url.origin}/[redacted]`
+            return `${url.protocol}[redacted]`
+          } catch {
+            return input.split(/[?#]/, 1)[0].slice(0, 600)
+          }
+        }
         const resources = performance.getEntriesByType("resource").slice(-80).map((entry) => {
           const resource = entry as PerformanceResourceTiming & { responseStatus?: number }
           return {
-            name: resource.name,
+            name: sanitizeUrl(resource.name),
             initiatorType: resource.initiatorType || "resource",
             durationMs: Math.round(resource.duration),
             transferSize: resource.transferSize || undefined,
@@ -76,8 +120,18 @@ export async function collectPageDiagnostics(tabId: number): Promise<QueueMintPa
     if (!value) return null
     return {
       ...value,
-      errors: value.errors.slice(-MAX_ERRORS),
-      network: value.network.slice(-MAX_NETWORK),
+      errors: value.errors.slice(-MAX_ERRORS).map((item) => {
+        const source = item.source ? sanitizeDiagnosticUrl(item.source) : undefined
+        return {
+          ...item,
+          source,
+          message: item.kind === "resource" && source ? `Resource failed to load: ${source}` : item.message,
+        }
+      }),
+      network: value.network.slice(-MAX_NETWORK).map((item) => ({
+        ...item,
+        name: sanitizeDiagnosticUrl(item.name),
+      })),
     }
   } catch {
     return null
