@@ -23,7 +23,7 @@ QueueMint is a browser extension that operates against the user's already authen
 - Full-screen Capture temporarily activates the linked source tab when the user explicitly adds another screenshot, then restores the previous editor tab.
 - Recording is constrained to short evidence clips and local attachment size limits.
 
-## Diagnostics privacy
+## Diagnostics privacy and trust boundary
 
 QueueMint Capture can collect lightweight page diagnostics to help reproduce bugs:
 
@@ -32,10 +32,13 @@ QueueMint Capture can collect lightweight page diagnostics to help reproduce bug
 - failed resource loads observed after installation
 - navigation timing and recent Resource Timing entries
 
+Runtime listeners are installed in the page `MAIN` world because page JavaScript errors can be missed from the default isolated extension world. Events are forwarded into a separate isolated-world collector. The collector accepts only bounded diagnostic record shapes and sanitizes the stored values.
+
+Diagnostic URLs are stored without query strings or fragments. Captured messages also redact common bearer tokens, API-key/token assignments, and known token prefixes where detected. Sanitization is repeated again when diagnostics are collected/formatted.
+
 Diagnostics are not appended to Jira unless the user explicitly selects the diagnostics option in the issue form.
 
-QueueMint intentionally does **not** request Chrome `debugger` permission for this feature and does not monkey-patch the page's console methods.
-
+QueueMint intentionally does not request Chrome `debugger` permission and does not monkey-patch the page's console methods. Page diagnostics are evidence, not a trusted security log. A hostile page can influence its own page-level signals.
 
 ## Smart Assistant privacy
 
@@ -48,6 +51,8 @@ QueueMint intentionally does **not** request Chrome `debugger` permission for th
 - Recent Jira issue titles are only sent when semantic duplicate comparison is enabled for that request.
 - AI output is treated as a suggestion. It never bypasses QueueMint preview/form controls or directly mutates Jira.
 
+The OpenAI API key is stored only in `chrome.storage.session` for the current browser session. It is not written to persistent `chrome.storage.local`. A legacy key from an older QueueMint build is migrated into session storage and removed from the persistent settings object during settings load.
+
 ## Clipboard permission
 
 v0.23.x uses `clipboardWrite` so the user can explicitly copy the active screenshot. QueueMint does not read clipboard contents.
@@ -56,7 +61,7 @@ v0.23.x uses `clipboardWrite` so the user can explicitly copy the active screens
 
 QueueMint may store local extension preferences and workflow data such as selected project/board context, Saved Views, Saved Actions, automation rules, compact activity entries, appearance preferences, and temporary Capture drafts.
 
-Smart Assistant may store an OpenAI API key in `chrome.storage.local` when the user explicitly configures it. The key is never bundled in source, Jira payloads, logs, or documentation. Do not place other secrets or passwords in QueueMint configuration.
+Do not place secrets or passwords in QueueMint configuration. The Smart Assistant API key is intentionally session-only and portable backups do not include it.
 
 ## Reporting a security issue
 
@@ -76,9 +81,12 @@ New Chrome permissions should be treated as product/security changes. Any future
 
 QueueMint portable backups intentionally exclude the Smart Assistant API key, activity history, working issue drafts, and last-created issue state. Backup import accepts only the QueueMint portable-backup schema and writes only the preference/workflow fields intended for transfer between installations.
 
+## Automated security gates
 
-## v1.0 release guard
+`npm test` covers the audited diagnostics redaction/MAIN-world behavior and Smart Assistant session-only key storage, including migration from the previous persistent format.
 
-`npm run check:release` is an automated policy gate. It verifies the intended required permission set, rejects static host permissions and selected high-risk permissions, checks the Manifest V3/version/description contract, scans production source for obvious committed credential patterns and dynamic code execution, and requires the public privacy/permission/support documents.
+`npm run security:audit` runs an npm production-dependency vulnerability audit at high severity or above. CI runs it on changes, and `.github/workflows/security.yml` runs the same check on a weekly schedule. Dependabot is configured for npm and GitHub Actions updates.
 
-This guard is defense in depth. It does not replace manual review of Jira endpoints, browser permission prompts, Store privacy disclosures, or the clean-profile/upgrade smoke tests.
+`npm run check:release` remains the policy gate for the permission set, static host permissions, selected high-risk permissions, manifest/version/description rules, obvious committed credential patterns, dynamic code execution, and required public security/release files.
+
+These automated gates are defense in depth. They do not replace manual review of Jira endpoints, browser permission prompts, Store privacy disclosures, or the clean-profile/upgrade smoke tests.

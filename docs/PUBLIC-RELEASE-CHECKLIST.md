@@ -3,15 +3,17 @@
 ## Automated gates
 
 ```bash
-npm install
+npm ci
 npm run check:architecture
 npm run typecheck
+npm test
 npm run build
 npm run check:release
+npm run security:audit
 git diff --check
 ```
 
-CI must pass on the release branch and the final pull request.
+CI must pass on the release branch and the final pull request. The scheduled Security Audit workflow must also be green.
 
 ## Fresh-profile test
 
@@ -27,26 +29,43 @@ Use a new Chrome/Edge profile with no previous QueueMint storage:
 - open Command Layer with Ctrl+Shift+K / Command+Shift+K
 - with another QueueMint build holding the primary shortcut, verify Alt+Shift+K opens the RC Command Layer
 - confirm local Smart Draft works with AI disabled
+- enable OpenAI Smart Assistant in a test profile, save a disposable test key, and confirm persistent `chrome.storage.local` does not contain that key
+- fully exit the browser, reopen it, and confirm the OpenAI key must be entered again
+
+## Diagnostics regression test
+
+On a test page under your control:
+
+- start Capture so diagnostics are installed
+- trigger a main-page JavaScript error and an unhandled promise rejection
+- confirm both are visible in QueueMint diagnostics
+- load a test resource whose URL contains a fake query token and fragment
+- confirm the stored/formatted diagnostic URL contains only origin + path
+- put a fake bearer/token value in a test error message and confirm it is redacted
+- confirm QueueMint still does not request Chrome `debugger`
 
 ## Upgrade test
 
 From the last public candidate or v0.27 development package:
 
 - install/seed Saved Views, Saved Actions, Automation rules, favorites, recent context, and an active Capture draft
-- upgrade to the v1.0 package without clearing extension storage
+- if testing migration from an older Smart Assistant build, seed only a disposable fake API key
+- upgrade without clearing extension storage
 - verify preferences/reusable workflows survive
 - verify the active Capture session can still resume
-- verify Smart Assistant remains local-only unless previously configured
+- verify a legacy Smart Assistant API key is moved to session storage and removed from persistent local settings
 - verify no new required permission prompt appears unexpectedly
 
 ## Privacy/security review
 
 - compare `public/manifest.json` to `docs/PERMISSIONS.md`
 - confirm no `debugger`, `webRequest`, `cookies`, `history`, or static host permission was added
-- confirm Smart Assistant is off by default and the API key is excluded from portable backups
+- confirm Smart Assistant is off by default
+- confirm Smart Assistant API keys are session-only and excluded from portable backups
 - confirm no secrets exist in tracked source or release artifacts
 - confirm diagnostics remain opt-in
 - confirm Jira writes still require the normal user action/preview path
+- confirm `LICENSE` reflects the redistribution policy you actually want
 
 ## Store package
 
@@ -62,7 +81,9 @@ Complete the Chrome Web Store listing and privacy tabs before publishing. Use `s
 
 ## Release decision
 
-Do not tag final `v1.0.0` until the fresh install, upgrade test, permission/privacy audit, and critical Jira/Capture smoke tests are recorded as passed.
+Do not publish a maintenance release until automated gates, fresh install, upgrade, diagnostics redaction, permission/privacy audit, and critical Jira/Capture smoke tests are recorded as passed.
+
+Public maturity cannot be created by a checklist. Record real pilot environments, browser/Jira versions, regressions, and user reports over time instead of claiming unearned certification.
 
 ## RC3 editor/routing regression checks
 
@@ -71,7 +92,6 @@ Do not tag final `v1.0.0` until the fresh install, upgrade test, permission/priv
 - Bullet/numbered list, quote, inline-code, and link controls round-trip through Jira wiki serialization.
 - Smart Assistant Apply converts common Markdown formatting to Jira wiki formatting before the visual editor renders it.
 - Quick Issue Sprint selector contains sprints only; Backlog remains available through Placement.
-
 
 ## RC4 attachment regression checks
 

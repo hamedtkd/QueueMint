@@ -38,9 +38,25 @@ if (shortcut !== "Ctrl+Shift+K") fail("Primary Command Layer shortcut must remai
 if (!fallbackShortcut) fail("A fallback Command Layer shortcut is required when Chrome cannot assign the primary shortcut.")
 if (!manifest.background?.service_worker || !exists(`public/${manifest.background.service_worker}`)) fail("Manifest background service worker is missing from public/.")
 
-for (const relative of ["PRIVACY.md", "SECURITY.md", "SUPPORT.md", "docs/PERMISSIONS.md", "docs/COMPATIBILITY.md", "docs/PUBLIC-RELEASE-CHECKLIST.md", "store/CHROME-WEB-STORE.md"]) {
-  if (!exists(relative)) fail(`Public-release document missing: ${relative}`)
+for (const relative of [
+  "LICENSE",
+  "PRIVACY.md",
+  "SECURITY.md",
+  "SUPPORT.md",
+  "docs/PERMISSIONS.md",
+  "docs/COMPATIBILITY.md",
+  "docs/PUBLIC-RELEASE-CHECKLIST.md",
+  "store/CHROME-WEB-STORE.md",
+  "tests/diagnostics.test.mjs",
+  "tests/smart-assistant-storage.test.mjs",
+  ".github/workflows/security.yml",
+  ".github/dependabot.yml",
+]) {
+  if (!exists(relative)) fail(`Public-release guard file missing: ${relative}`)
 }
+
+if (!packageJson.scripts?.test) fail("package.json must define a test script.")
+if (!packageJson.scripts?.["security:audit"]) fail("package.json must define a production dependency security audit script.")
 
 function walk(directory) {
   if (!fs.existsSync(directory)) return []
@@ -67,6 +83,8 @@ for (const file of [...walk(path.join(root, "src")), ...walk(path.join(root, "pu
 note(`Manifest ${manifestVersion}${manifest.version_name ? ` (${manifest.version_name})` : ""}`)
 note(`Required permissions: ${(manifest.permissions ?? []).join(", ")}`)
 note(`Optional hosts: ${(manifest.optional_host_permissions ?? []).join(", ")}`)
+note("Security regression tests and scheduled dependency audit are present.")
+note("MIT license file is present.")
 
 if (failures.length) {
   console.error("Public-release audit failed:\n" + failures.map((item) => `- ${item}`).join("\n"))

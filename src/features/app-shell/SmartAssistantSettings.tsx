@@ -19,12 +19,12 @@ function text(locale: AppLocale) {
     title: "Smart Assistant", hint: "هوش مصنوعی اختیاری است. بدون تنظیم این بخش، Smart Draft محلی همچنان کار می‌کند.",
     provider: "حالت", local: "فقط محلی", openai: "OpenAI API", model: "مدل", key: "API key", save: "ذخیره تنظیمات",
     clear: "پاک کردن کلید", saved: "تنظیمات Smart Assistant ذخیره شد", cleared: "کلید API پاک شد",
-    privacy: "کلید فقط در حافظه محلی همین افزونه ذخیره می‌شود. هیچ داده‌ای تا زمانی که خودت Generate را نزنی ارسال نمی‌شود.",
+    privacy: "کلید فقط در حافظه نشست افزونه نگه داشته می‌شود و با بستن کامل مرورگر پاک می‌شود. هیچ داده‌ای تا زمانی که خودت Generate را نزنی ارسال نمی‌شود.",
   } : {
     title: "Smart Assistant", hint: "AI is optional. Local Smart Draft keeps working when this is not configured.",
     provider: "Mode", local: "Local only", openai: "OpenAI API", model: "Model", key: "API key", save: "Save settings",
     clear: "Clear key", saved: "Smart Assistant settings saved", cleared: "API key cleared",
-    privacy: "The key is stored only in this extension's local browser storage. No data is sent until you explicitly click Generate.",
+    privacy: "The key is kept only in extension session storage and is cleared after the browser fully exits. No data is sent until you explicitly click Generate.",
   }
 }
 

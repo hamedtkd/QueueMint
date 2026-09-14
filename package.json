@@ -7,12 +7,14 @@
     "dev": "vite",
     "build": "npm run check:architecture && tsc -b && vite build",
     "typecheck": "tsc -b",
+    "test": "node --experimental-strip-types --test",
     "preview": "vite preview",
     "font:install": "node ./scripts/install-samim.mjs",
     "check:architecture": "node ./scripts/check-file-size.mjs",
-    "check": "npm run check:architecture && npm run typecheck",
-    "verify": "npm run check:architecture && npm run typecheck && npm run build && npm run check:release",
-    "check:release": "node ./scripts/check-release.mjs"
+    "check": "npm run check:architecture && npm run typecheck && npm test",
+    "verify": "npm run check:architecture && npm run typecheck && npm test && npm run build && npm run check:release",
+    "check:release": "node ./scripts/check-release.mjs",
+    "security:audit": "npm audit --omit=dev --audit-level=high"
   },
   "dependencies": {
     "@base-ui/react": "1.7.0",

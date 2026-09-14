@@ -3,6 +3,7 @@ import type { QueueMintPageContext } from "@/lib/capture"
 import type { JiraIssueSearchResult } from "@/types"
 
 const SETTINGS_KEY = "queuemint-smart-assistant-v1"
+const API_KEY_SESSION_KEY = "queuemint-smart-assistant-api-key-v1"
 const OPENAI_ORIGIN = "https://api.openai.com/*"
 const OPENAI_URL = "https://api.openai.com/v1/responses"
 
@@ -12,6 +13,11 @@ export interface SmartAssistantSettings {
   provider: SmartAssistantProvider
   model: string
   apiKey: string
+}
+
+interface StoredSmartAssistantSettings {
+  provider: SmartAssistantProvider
+  model: string
 }
 
 export interface SmartAssistantDataOptions {
@@ -89,20 +95,50 @@ export const DEFAULT_SMART_ASSISTANT_OPTIONS: SmartAssistantDataOptions = {
   duplicateCandidates: false,
 }
 
+function normalizedStoredSettings(value: Partial<SmartAssistantSettings> | undefined): StoredSmartAssistantSettings {
+  return {
+    provider: value?.provider === "openai" ? "openai" : "local",
+    model: value?.model?.trim() || DEFAULT_SMART_ASSISTANT_SETTINGS.model,
+  }
+}
+
+async function loadSessionApiKey() {
+  if (!chrome.storage?.session) return ""
+  const result = await chrome.storage.session.get(API_KEY_SESSION_KEY)
+  const value = result?.[API_KEY_SESSION_KEY]
+  return typeof value === "string" ? value.trim() : ""
+}
+
+async function saveSessionApiKey(apiKey: string) {
+  if (!chrome.storage?.session) return
+  const value = apiKey.trim()
+  if (value) await chrome.storage.session.set({ [API_KEY_SESSION_KEY]: value })
+  else await chrome.storage.session.remove(API_KEY_SESSION_KEY)
+}
+
 export async function loadSmartAssistantSettings(): Promise<SmartAssistantSettings> {
   if (typeof chrome === "undefined" || !chrome.storage?.local) return DEFAULT_SMART_ASSISTANT_SETTINGS
   const result = await chrome.storage.local.get(SETTINGS_KEY)
-  const stored = result?.[SETTINGS_KEY] as Partial<SmartAssistantSettings> | undefined
-  return {
-    provider: stored?.provider === "openai" ? "openai" : "local",
-    model: stored?.model?.trim() || DEFAULT_SMART_ASSISTANT_SETTINGS.model,
-    apiKey: stored?.apiKey ?? "",
+  const legacy = result?.[SETTINGS_KEY] as Partial<SmartAssistantSettings> | undefined
+  const stored = normalizedStoredSettings(legacy)
+  let apiKey = await loadSessionApiKey()
+
+  if (!apiKey && typeof legacy?.apiKey === "string" && legacy.apiKey.trim()) {
+    apiKey = legacy.apiKey.trim()
+    await saveSessionApiKey(apiKey)
   }
+  if (legacy && Object.prototype.hasOwnProperty.call(legacy, "apiKey")) {
+    await chrome.storage.local.set({ [SETTINGS_KEY]: stored })
+  }
+
+  return { ...stored, apiKey }
 }
 
 export async function saveSmartAssistantSettings(settings: SmartAssistantSettings) {
   if (typeof chrome === "undefined" || !chrome.storage?.local) return
-  await chrome.storage.local.set({ [SETTINGS_KEY]: settings })
+  const stored = normalizedStoredSettings(settings)
+  await chrome.storage.local.set({ [SETTINGS_KEY]: stored })
+  await saveSessionApiKey(settings.apiKey)
 }
 
 export async function requestSmartAssistantPermission(settings: SmartAssistantSettings) {
