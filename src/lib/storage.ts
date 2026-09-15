@@ -1,4 +1,4 @@
-import type { AppLocale, AppTheme, DensityMode, ReviewLayout } from "@/types"
+import type { AppLocale, AppTheme, DensityMode, RadiusMode, ReviewLayout } from "@/types"
 
 export interface SavedIssueView {
   id: string
@@ -57,7 +57,7 @@ export interface AutomationRule {
   lastMatchCount?: number
 }
 
-export type ActivityKind = "create" | "bulk-edit" | "automation" | "undo" | "move" | "assign" | "delete"
+export type ActivityKind = "create" | "bulk-edit" | "automation" | "worklog" | "undo" | "move" | "assign" | "delete"
 export type ActivityOutcome = "success" | "warning" | "error"
 
 export interface ActivityEntry {
@@ -86,7 +86,8 @@ export interface StoredState {
   reviewLayout?: ReviewLayout
   gridColumns?: 2 | 3 | 4
   density?: DensityMode
-  lastMode?: "dashboard" | "quick" | "bulk" | "review" | "manage" | "automation"
+  radius?: RadiusMode
+  lastMode?: "dashboard" | "quick" | "bulk" | "review" | "manage" | "worklog" | "automation"
   lastCreatedKeys?: string[]
   onboardingComplete?: boolean
   savedActions?: SavedWorkspaceAction[]

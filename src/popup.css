@@ -202,3 +202,10 @@ body.qm-popup-page {
 .dark .qm-preflight-card {
   background: color-mix(in oklab, var(--primary) 4%, var(--card));
 }
+
+html[data-density="compact"] .qm-popup-body { padding: 8px; }
+html[data-density="spacious"] .qm-popup-body { padding: 16px; }
+html[data-density="compact"] .qm-popup-action-card { min-height: 76px; padding: 9px; }
+html[data-density="spacious"] .qm-popup-action-card { min-height: 96px; padding: 15px; }
+html[data-radius] :where(.qm-popup-page-card, .qm-popup-action-card, .qm-smart-card, .qm-preflight-card, .capture-canvas-shell) { border-radius: var(--qm-panel-radius); }
+html[data-radius] .qm-popup-action-icon { border-radius: var(--qm-control-radius); }

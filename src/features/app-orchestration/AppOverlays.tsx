@@ -83,7 +83,7 @@ export function AppOverlays({ state: s, derived: d, actions: a }: Props) {
       <AppearanceSheet
         open={s.settingsOpen} onOpenChange={s.setSettingsOpen} locale={s.locale} t={t} theme={s.theme} setTheme={s.setTheme}
         setLocale={s.setLocale} accentColor={s.accentColor} setAccentColor={s.setAccentColor} reviewLayout={s.reviewLayout}
-        setReviewLayout={s.setReviewLayout} gridColumns={s.gridColumns} setGridColumns={s.setGridColumns} density={s.density} setDensity={s.setDensity}
+        setReviewLayout={s.setReviewLayout} gridColumns={s.gridColumns} setGridColumns={s.setGridColumns} density={s.density} setDensity={s.setDensity} radius={s.radius} setRadius={s.setRadius}
       />
 
       <JiraOnboardingSheet
@@ -115,6 +115,7 @@ export function AppOverlays({ state: s, derived: d, actions: a }: Props) {
             <div><span className="text-muted-foreground">{t.project}</span><div className="mt-1 font-medium">{payload?.project ?? "—"}</div></div>
             <div><span className="text-muted-foreground">{t.selected}</span><div className="mt-1 font-medium">{d.creationCount}</div></div>
             <div className="col-span-2"><span className="text-muted-foreground">{t.placement}</span><div className="mt-1 font-medium">{d.contextPlacement}</div></div>
+            {d.creationWorklogCount ? <div className="col-span-2"><span className="text-muted-foreground">{s.locale === "fa" ? "Worklog بعد از ساخت" : "Worklog after create"}</span><div className="mt-1 font-medium">{d.creationWorklogCount} {s.locale === "fa" ? "تسک" : "issues"} · {Math.floor(d.creationWorklogMinutes / 60)}h {d.creationWorklogMinutes % 60}m</div></div> : null}
           </div>
           <AlertDialogFooter><AlertDialogCancel>{t.cancel}</AlertDialogCancel><AlertDialogAction onClick={() => void a.create.executeCreateBatch()}>{t.confirmCreate}</AlertDialogAction></AlertDialogFooter>
         </AlertDialogContent>
@@ -123,7 +124,8 @@ export function AppOverlays({ state: s, derived: d, actions: a }: Props) {
       <RunResultsSheet
         t={t} locale={s.locale} runResult={s.runResult} successCount={d.successCount} failureCount={d.failureCount}
         sprintFailureCount={d.sprintFailureCount} attachmentFailureCount={d.attachmentFailureCount} estimateFailureCount={d.estimateFailureCount}
-        creating={s.creating} onRetryFailed={() => void a.create.retryFailed()} onRetrySprint={() => void a.create.retrySprintPlacement()}
+        worklogFailureCount={d.worklogFailureCount} creating={s.creating} onRetryFailed={() => void a.create.retryFailed()} onRetrySprint={() => void a.create.retrySprintPlacement()}
+        onRetryWorklog={() => void a.create.retryWorklogs()}
       />
     </>
   )

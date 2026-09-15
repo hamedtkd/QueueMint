@@ -50,6 +50,7 @@ export type ManageJiraScreenProps = {
   onMove: (keys: string[], sprintId: number | null) => void
   onAssignToMe: () => void
   onBulkEdit: () => void
+  onWorklog: () => void
   onPreparePowerTool: (input: JiraPowerToolPreparation) => void
   savedActions: SavedWorkspaceAction[]
   onUseSavedAction: (action: SavedWorkspaceAction) => void

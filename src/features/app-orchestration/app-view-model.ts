@@ -51,9 +51,12 @@ export type AppDerivedModel = {
   sprintFailureCount: number
   attachmentFailureCount: number
   estimateFailureCount: number
+  worklogFailureCount: number
   progressValue: number
   contextPlacement: string
   creationCount: number
+  creationWorklogCount: number
+  creationWorklogMinutes: number
   contextualSamplePayload: BulkPayload
   contextualAiPrompt: string
   appStyle: CSSProperties

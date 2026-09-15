@@ -45,6 +45,7 @@ export interface JiraIssueFieldSnapshot {
 }
 
 export interface JiraUser {
+  accountId?: string
   name?: string
   key?: string
   displayName?: string
@@ -72,6 +73,12 @@ export interface JiraBoard {
   name: string
   type: string
   self?: string
+}
+
+export interface JiraBoardColumn {
+  id: string
+  name: string
+  statusIds: string[]
 }
 
 export interface JiraEpic {

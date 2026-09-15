@@ -1,5 +1,5 @@
 import {
-  ArrowLeftRight, Bookmark, Bolt, Bug, ClipboardCopy, Eye, ExternalLink, FileJson, History, Layers3,
+  ArrowLeftRight, Bookmark, Bolt, Bug, ClipboardCopy, Clock3, Eye, ExternalLink, FileJson, History, Layers3,
   LayoutDashboard, ListChecks, RefreshCcw, Settings2, SlidersHorizontal, Sparkles, SquareKanban,
   UserCheck, UsersRound,
 } from "lucide-react"
@@ -29,6 +29,8 @@ type CommandItemOptions = {
   favoriteCommandIds: Set<string>
   sprintSummary?: { label: string; issueCount: number }
   setMode: (mode: Mode) => void
+  onOpenWorklog: () => void
+  onWorklogSelected: () => void
   onBulkEdit: () => void
   onInspect: (key: string) => void
   onOpenInJira: (key: string) => void
@@ -65,9 +67,11 @@ export function useAppCommandItems(o: CommandItemOptions): CommandPaletteItem[] 
     { id: "bulk", group: groups.navigate, label: o.t.openImport, description: o.t.bulkHint, keywords: "json import batch", icon: <FileJson className="size-4" />, onSelect: () => o.setMode("bulk") },
     { id: "review", group: groups.navigate, label: o.t.openReview, description: o.t.reviewHint, keywords: "review draft", icon: <ListChecks className="size-4" />, disabled: !o.issueCount, onSelect: () => o.setMode("review") },
     { id: "manage", group: groups.navigate, label: o.t.openManager, description: o.t.manageHint, keywords: "jira board manage issues", icon: <SquareKanban className="size-4" />, onSelect: () => o.setMode("manage") },
+    { id: "worklog", group: groups.navigate, label: isFa ? "دستیار ثبت زمان" : "Worklog Assistant", description: isFa ? "تکمیل زمان امروز یا ثبت زمان روی تسک‌های انتخابی" : "Complete today or log work on selected issues", keywords: "time worklog log work daily target", icon: <Clock3 className="size-4" />, onSelect: o.onOpenWorklog },
     { id: "automation", group: groups.navigate, label: isFa ? "اتوماسیون" : "Automations", description: isFa ? "قوانین امن و عملیات ذخیره شده" : "Safe rules and saved actions", keywords: "automation rules activity macro", icon: <Sparkles className="size-4" />, onSelect: () => o.setMode("automation") },
     { id: "assign-selected", group: groups.actions, label: isFa ? "اختصاص انتخاب‌ها به من" : "Assign selected to me", description: selectedDescription, keywords: "assign selected me owner", icon: <UserCheck className="size-4" />, disabled: !selectedCount || !o.currentUserIdentity, onSelect: o.onAssignToMe },
     { id: "bulk-edit", group: groups.actions, label: o.t.bulkEdit, description: selectedDescription, keywords: "edit selected jira fields", icon: <UsersRound className="size-4" />, disabled: !selectedCount, onSelect: o.onBulkEdit },
+    { id: "worklog-selected", group: groups.actions, label: isFa ? "ثبت زمان روی انتخاب‌ها" : "Log work on selected", description: selectedDescription, keywords: "worklog time selected issues", icon: <Clock3 className="size-4" />, disabled: !selectedCount, onSelect: o.onWorklogSelected },
     { id: "inspect-selected", group: groups.actions, label: isFa ? "نمایش جزئیات تسک انتخابی" : "Inspect selected issue", description: selectedKey ?? (isFa ? "دقیقا یک تسک را انتخاب کن" : "Select exactly one issue"), keywords: "issue detail inspector comments attachments", icon: <Eye className="size-4" />, disabled: !selectedKey, onSelect: () => selectedKey && o.onInspect(selectedKey) },
     { id: "open-selected-jira", group: groups.actions, label: isFa ? "باز کردن تسک انتخابی در Jira" : "Open selected issue in Jira", description: selectedKey ?? (isFa ? "دقیقا یک تسک را انتخاب کن" : "Select exactly one issue"), keywords: "open jira selected issue", icon: <ExternalLink className="size-4" />, disabled: !selectedKey, onSelect: () => selectedKey && o.onOpenInJira(selectedKey) },
     { id: "move-backlog", group: groups.actions, label: isFa ? "انتقال انتخاب‌ها به بک لاگ" : "Move selected to backlog", description: selectedDescription, keywords: "move selected backlog", icon: <ArrowLeftRight className="size-4" />, disabled: !selectedCount, onSelect: () => o.onMoveSelected(null) },

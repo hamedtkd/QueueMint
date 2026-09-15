@@ -3,7 +3,7 @@ import { toast } from "sonner"
 import type { LocalAttachment } from "@/components/attachment-picker"
 import type { AppCopy } from "@/features/app-shell/app-copy"
 import type { Mode, Placement } from "@/features/bulk/bulk-utils"
-import { assignIssueKeysToSprint, createIssues, uploadIssueAttachments } from "@/lib/jira"
+import { addJiraWorklog, assignIssueKeysToSprint, createIssues, uploadIssueAttachments } from "@/lib/jira"
 import type { ActivityEntry } from "@/lib/storage"
 import { validatePayload } from "@/lib/validation"
 import type {
@@ -80,13 +80,18 @@ export function useCreateFlow(options: CreateFlowOptions) {
       const attachmentFailed = withAttachments.results.some((item) => Boolean(item.attachmentError))
       const placementNeedsReview = withAttachments.results.some((item) => item.ok && item.sprintAssigned === false)
       const estimateNeedsReview = withAttachments.results.some((item) => item.ok && Boolean(item.estimateError))
-      recordActivity({ kind: "create", outcome: allIssuesCreated && !attachmentFailed ? (placementNeedsReview || estimateNeedsReview ? "warning" : "success") : "warning", title: "Batch created", detail: `${createdKeys.length}/${withAttachments.results.length} ${t.issues}`, issueKeys: createdKeys })
+      const worklogNeedsReview = withAttachments.results.some((item) => item.ok && Boolean(item.worklogError))
+      const postCreateNeedsReview = placementNeedsReview || estimateNeedsReview || worklogNeedsReview
+      recordActivity({ kind: "create", outcome: allIssuesCreated && !attachmentFailed ? (placementNeedsReview || estimateNeedsReview || worklogNeedsReview ? "warning" : "success") : "warning", title: "Batch created", detail: `${createdKeys.length}/${withAttachments.results.length} ${t.issues}`, issueKeys: createdKeys })
       if (allIssuesCreated && !attachmentFailed) {
-        if (estimateNeedsReview) toast.warning(t.estimateApplyFailed, { description: t.createdReviewEstimate })
+        if (worklogNeedsReview) toast.warning("Some worklogs could not be added", { description: withAttachments.results.find((item) => item.worklogError)?.worklogError })
+        else if (estimateNeedsReview) toast.warning(t.estimateApplyFailed, { description: t.createdReviewEstimate })
         else toast.success(t.createSucceeded, { description: `${createdKeys.length} ${t.issues}` })
-        clearDraftBatch(payload); setRunResult(null)
-        setLiveActionMessage(placementNeedsReview ? t.createdReviewPlacement : estimateNeedsReview ? t.createdReviewEstimate : t.draftCleared)
-        setMode("manage")
+        if (!postCreateNeedsReview) {
+          clearDraftBatch(payload); setRunResult(null); setLiveActionMessage(t.draftCleared); setMode("manage")
+        } else {
+          setLiveActionMessage(worklogNeedsReview ? "Review failed worklogs before leaving this batch." : placementNeedsReview ? t.createdReviewPlacement : t.createdReviewEstimate)
+        }
       } else if (!allIssuesCreated) toast.error(t.updatePartial, { description: withAttachments.results.find((item) => !item.ok)?.error })
     } finally { setCreating(false) }
   }
@@ -122,6 +127,20 @@ export function useCreateFlow(options: CreateFlowOptions) {
     setRunResult({ ...runResult, finishedAt: new Date().toISOString(), results: runResult.results.map((item) => ({ ...item, ...(updates.get(item.index) ?? {}) })) })
   }
 
+  async function retryWorklogs() {
+    if (!runResult) return
+    const updates = new Map<number, { worklogAssigned: boolean; worklogError?: string }>()
+    for (const item of runResult.results.filter((result) => result.ok && result.key && result.worklogAssigned === false)) {
+      if (!item.key || !item.worklogMinutes) continue
+      try {
+        const started = item.worklogStarted ? new Date(item.worklogStarted) : new Date()
+        await addJiraWorklog(item.key, item.worklogMinutes, item.worklogComment ?? "", Number.isNaN(started.getTime()) ? new Date() : started)
+        updates.set(item.index, { worklogAssigned: true })
+      } catch (error) { updates.set(item.index, { worklogAssigned: false, worklogError: error instanceof Error ? error.message : "Worklog failed." }) }
+    }
+    setRunResult({ ...runResult, finishedAt: new Date().toISOString(), results: runResult.results.map((item) => ({ ...item, ...(updates.get(item.index) ?? {}) })) })
+  }
+
   async function createQuickIssue() {
     if (!metadata || !selectedProjectKey || !quickIssue.summary.trim()) return
     setQuickCreating(true); setQuickResult(null)
@@ -143,5 +162,5 @@ export function useCreateFlow(options: CreateFlowOptions) {
     } finally { setQuickCreating(false) }
   }
 
-  return { executeCreateBatch, retryFailed, retrySprintPlacement, createQuickIssue }
+  return { executeCreateBatch, retryFailed, retrySprintPlacement, retryWorklogs, createQuickIssue }
 }

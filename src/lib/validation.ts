@@ -93,6 +93,14 @@ export function validatePayload(
     if (issue.description !== undefined && typeof issue.description !== "string") errors.push({ level: "error", message: "description must be a string.", issueIndex: index })
     if (issue.assignee !== undefined && typeof issue.assignee !== "string") errors.push({ level: "error", message: "assignee must be a Jira username/key string.", issueIndex: index })
     if (issue.estimate !== undefined && (typeof issue.estimate !== "string" || !isValidJiraEstimate(issue.estimate))) errors.push({ level: "error", message: "estimate must use Jira duration format such as 3h, 2d, 30m, or 1d 4h.", issueIndex: index })
+    if (issue.worklog !== undefined) {
+      if (!issue.worklog || typeof issue.worklog !== "object" || Array.isArray(issue.worklog)) errors.push({ level: "error", message: "worklog must be an object.", issueIndex: index })
+      else {
+        if (!Number.isInteger(issue.worklog.minutes) || issue.worklog.minutes <= 0 || issue.worklog.minutes > 1440) errors.push({ level: "error", message: "worklog.minutes must be an integer between 1 and 1440.", issueIndex: index })
+        if (issue.worklog.comment !== undefined && typeof issue.worklog.comment !== "string") errors.push({ level: "error", message: "worklog.comment must be a string.", issueIndex: index })
+        if (issue.worklog.started !== undefined && (typeof issue.worklog.started !== "string" || Number.isNaN(new Date(issue.worklog.started).getTime()))) errors.push({ level: "error", message: "worklog.started must be a valid date/time string.", issueIndex: index })
+      }
+    }
     if (issue.labels !== undefined && (!Array.isArray(issue.labels) || issue.labels.some((label) => typeof label !== "string"))) errors.push({ level: "error", message: "labels must be an array of strings.", issueIndex: index })
     if (issue.components !== undefined && (!Array.isArray(issue.components) || issue.components.some((value) => typeof value !== "string"))) errors.push({ level: "error", message: "components must be an array of strings.", issueIndex: index })
     if (issue.fixVersions !== undefined && (!Array.isArray(issue.fixVersions) || issue.fixVersions.some((value) => typeof value !== "string"))) errors.push({ level: "error", message: "fixVersions must be an array of strings.", issueIndex: index })

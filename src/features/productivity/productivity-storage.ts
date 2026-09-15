@@ -1,4 +1,6 @@
 import { loadState, saveState, type StoredState } from "@/lib/storage"
+import { loadWorklogSettings, saveWorklogSettings } from "@/features/worklog/worklog-storage"
+import type { WorklogSettings } from "@/types"
 
 const PRODUCTIVITY_KEY = "queuemint-productivity-v1"
 const BACKUP_KIND = "queuemint-portable-backup"
@@ -28,6 +30,7 @@ export interface PortableQueueMintBackup {
   exportedAt: string
   state: Partial<StoredState>
   productivity: ProductivityState
+  worklog?: WorklogSettings
 }
 
 const EMPTY_PRODUCTIVITY: ProductivityState = { favoriteCommandIds: [], recentProjects: [], recentBoards: [] }
@@ -79,7 +82,8 @@ function sanitizePortableState(value: unknown): Partial<StoredState> {
   if (value.reviewLayout === "board" || value.reviewLayout === "grid" || value.reviewLayout === "list") state.reviewLayout = value.reviewLayout
   if (value.gridColumns === 2 || value.gridColumns === 3 || value.gridColumns === 4) state.gridColumns = value.gridColumns
   if (value.density === "compact" || value.density === "comfortable" || value.density === "spacious") state.density = value.density
-  if (["dashboard", "quick", "bulk", "review", "manage", "automation"].includes(String(value.lastMode))) state.lastMode = value.lastMode as StoredState["lastMode"]
+  if (["none", "small", "medium", "large"].includes(String(value.radius))) state.radius = value.radius as StoredState["radius"]
+  if (["dashboard", "quick", "bulk", "review", "manage", "worklog", "automation"].includes(String(value.lastMode))) state.lastMode = value.lastMode as StoredState["lastMode"]
   if (Array.isArray(value.savedActions)) state.savedActions = value.savedActions.slice(0, 200) as StoredState["savedActions"]
   if (Array.isArray(value.savedViews)) state.savedViews = value.savedViews.slice(0, 200) as StoredState["savedViews"]
   if (Array.isArray(value.automationRules)) state.automationRules = value.automationRules.slice(0, 200) as StoredState["automationRules"]
@@ -96,6 +100,7 @@ function portableState(state: Partial<StoredState>): Partial<StoredState> {
     reviewLayout: state.reviewLayout,
     gridColumns: state.gridColumns,
     density: state.density,
+    radius: state.radius,
     lastMode: state.lastMode,
     savedActions: state.savedActions,
     savedViews: state.savedViews,
@@ -104,8 +109,8 @@ function portableState(state: Partial<StoredState>): Partial<StoredState> {
 }
 
 export async function buildPortableBackup(): Promise<PortableQueueMintBackup> {
-  const [state, productivity] = await Promise.all([loadState(), loadProductivityState()])
-  return { kind: BACKUP_KIND, schemaVersion: 1, exportedAt: new Date().toISOString(), state: portableState(state), productivity }
+  const [state, productivity, worklog] = await Promise.all([loadState(), loadProductivityState(), loadWorklogSettings()])
+  return { kind: BACKUP_KIND, schemaVersion: 1, exportedAt: new Date().toISOString(), state: portableState(state), productivity, worklog }
 }
 
 export async function restorePortableBackup(value: unknown) {
@@ -115,5 +120,6 @@ export async function restorePortableBackup(value: unknown) {
   const current = await loadState()
   const incoming = sanitizePortableState(value.state)
   const next: StoredState = { ...current, ...incoming }
-  await Promise.all([saveState(next), saveProductivityState(sanitizeProductivity(value.productivity))])
+  const worklog = isRecord(value.worklog) ? { dailyTargetMinutes: Number(value.worklog.dailyTargetMinutes) } : undefined
+  await Promise.all([saveState(next), saveProductivityState(sanitizeProductivity(value.productivity)), ...(worklog ? [saveWorklogSettings(worklog)] : [])])
 }

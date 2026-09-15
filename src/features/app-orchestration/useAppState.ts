@@ -8,7 +8,7 @@ import { EMPTY_JSON } from "@/sample"
 import type {
   AppLocale, AppTheme, BulkIssue, CreateRunResult, DensityMode, JiraBoard, JiraConnectionStatus,
   JiraEditableField, JiraEpic, JiraIssueDetails, JiraIssueSearchResult, JiraLiveIssue, JiraMetadata,
-  JiraProject, JiraSprint, JiraTabContext, JiraUser, ReviewLayout, ValidationResult,
+  JiraProject, JiraSprint, JiraTabContext, JiraUser, RadiusMode, ReviewLayout, ValidationResult,
 } from "@/types"
 
 export function useAppState() {
@@ -51,6 +51,7 @@ export function useAppState() {
   const [reviewLayout, setReviewLayout] = useState<ReviewLayout>("board")
   const [gridColumns, setGridColumns] = useState<2 | 3 | 4>(3)
   const [density, setDensity] = useState<DensityMode>("comfortable")
+  const [radius, setRadius] = useState<RadiusMode>("medium")
   const [settingsOpen, setSettingsOpen] = useState(false)
   const [batchSettingsOpen, setBatchSettingsOpen] = useState(false)
   const [jsonSheetOpen, setJsonSheetOpen] = useState(false)
@@ -66,6 +67,7 @@ export function useAppState() {
   const [quickResult, setQuickResult] = useState<CreateRunResult | null>(null)
   const [liveIssues, setLiveIssues] = useState<JiraLiveIssue[]>([])
   const [liveSelectedKeys, setLiveSelectedKeys] = useState<Set<string>>(new Set())
+  const [worklogSelectedKeys, setWorklogSelectedKeys] = useState<Set<string>>(new Set())
   const [lastCreatedKeys, setLastCreatedKeys] = useState<string[]>([])
   const [liveScope, setLiveScope] = useState<"created" | "board">("created")
   const [liveSearch, setLiveSearch] = useState("")
@@ -120,10 +122,10 @@ export function useAppState() {
     loadingProject, setLoadingProject, validating, setValidating, creating, setCreating, createDialogOpen, setCreateDialogOpen, progress, setProgress,
     runResult, setRunResult, selectedIndex, setSelectedIndex, selectedForCreate, setSelectedForCreate, search, setSearch, typeFilter, setTypeFilter,
     placementFilter, setPlacementFilter, mode, setMode, locale, setLocale, theme, setTheme, accentColor, setAccentColor, reviewLayout, setReviewLayout,
-    gridColumns, setGridColumns, density, setDensity, settingsOpen, setSettingsOpen, batchSettingsOpen, setBatchSettingsOpen, jsonSheetOpen, setJsonSheetOpen,
+    gridColumns, setGridColumns, density, setDensity, radius, setRadius, settingsOpen, setSettingsOpen, batchSettingsOpen, setBatchSettingsOpen, jsonSheetOpen, setJsonSheetOpen,
     inspectorOpen, setInspectorOpen, autoSprintNote, setAutoSprintNote, copiedAiPrompt, setCopiedAiPrompt, attachmentsByIndex, setAttachmentsByIndex,
     quickIssue, setQuickIssue, quickPlacement, setQuickPlacement, quickSprintId, setQuickSprintId, quickAttachments, setQuickAttachments, quickCreating, setQuickCreating,
-    quickResult, setQuickResult, liveIssues, setLiveIssues, liveSelectedKeys, setLiveSelectedKeys, lastCreatedKeys, setLastCreatedKeys, liveScope, setLiveScope,
+    quickResult, setQuickResult, liveIssues, setLiveIssues, liveSelectedKeys, setLiveSelectedKeys, worklogSelectedKeys, setWorklogSelectedKeys, lastCreatedKeys, setLastCreatedKeys, liveScope, setLiveScope,
     liveSearch, setLiveSearch, loadingLive, setLoadingLive, liveActionMessage, setLiveActionMessage, liveBulkOpen, setLiveBulkOpen, liveBulkPriority, setLiveBulkPriority,
     liveBulkAssignee, setLiveBulkAssignee, liveBulkIssueType, setLiveBulkIssueType, liveBulkEpicLink, setLiveBulkEpicLink, liveBulkPlacement, setLiveBulkPlacement,
     liveBulkSprintId, setLiveBulkSprintId, liveBulkOriginalEstimate, setLiveBulkOriginalEstimate, liveBulkRemainingEstimate, setLiveBulkRemainingEstimate,

@@ -7,6 +7,10 @@ export interface JiraLiveIssue {
   type: string
   priority?: string
   status?: string
+  statusId?: string
+  statusCategory?: string
+  updated?: string
+  resolutionDate?: string
   assignee?: string
   assigneeId?: string
   avatarUrl?: string

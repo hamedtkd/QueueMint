@@ -98,6 +98,7 @@ Use this structure:
       "priority": "High",
       "sprint": null,
       "estimate": "2d",
+      "worklog": { "minutes": 90, "comment": "Implemented the first working slice" },
       "assignee": "jira-username",
       "labels": ["frontend", "ux"],
       "epic": "PROJECT-123"
@@ -113,6 +114,7 @@ Rules:
 - priority must use a priority available in the target Jira.
 - sprint is either a positive Jira sprint ID, null for Backlog, or omitted to inherit the batch default.
 - estimate uses Jira time-tracking syntax such as 30m, 3h, 2d, or 1d 4h; omit it to inherit defaults.estimate.
+- worklog is optional. Use it only for work that was actually done: minutes is a positive integer, comment is optional, and started may be an ISO date/time. QueueMint creates the issue first, then adds the worklog after review.
 - assignee is the Jira username/key, or omit it for unassigned/default behavior.
 - labels is an array of strings.
 - epic may be an existing Jira Epic key such as PROJECT-123 or a ref of an Epic created earlier in the same JSON.

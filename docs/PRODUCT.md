@@ -34,6 +34,12 @@ Let a user express the action they want without hunting through Jira screens, fo
 
 Remember the user's own Saved Views, Saved Actions, recent context, capture drafts, and preferred shortcuts without attempting to replace Jira's team/project configuration.
 
+### Worklog assistance
+
+Reduce the daily friction of Jira time logging by showing what the current user has already logged, preparing the remaining daily target across relevant or explicitly selected issues, and keeping every proposed duration reviewable before submit. Estimates may help weight a suggestion, but they must never be treated as evidence that the same amount of work was actually performed.
+
+AI may suggest a worklog allocation only from user-provided notes and visible Jira context, with the outbound data disclosed at the point of use. QueueMint should not silently fabricate or auto-submit timesheets.
+
 ### Smart assistance
 
 Use intelligence to reduce typing and searching, but keep the user in control before writing to Jira. External AI must remain optional, show what data will be sent, and only populate a reviewable draft rather than mutating Jira directly.

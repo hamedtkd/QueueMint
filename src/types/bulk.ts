@@ -23,6 +23,7 @@ export interface BulkIssue {
   epic?: string
   epicName?: string
   estimate?: string
+  worklog?: { minutes: number; comment?: string; started?: string }
   fields?: Record<string, unknown>
 }
 
@@ -67,6 +68,11 @@ export interface CreateResultItem {
   attachmentError?: string
   estimateAssigned?: boolean
   estimateError?: string
+  worklogAssigned?: boolean
+  worklogError?: string
+  worklogMinutes?: number
+  worklogComment?: string
+  worklogStarted?: string
 }
 
 export interface CreateRunResult {

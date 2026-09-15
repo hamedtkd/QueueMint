@@ -1,6 +1,6 @@
 # QueueMint Privacy Policy
 
-Last updated: 13 September 2026
+Last updated: 14 September 2026
 
 QueueMint is a browser extension that helps users work faster with Jira. It connects to Jira through the Jira session already open in the user's browser. QueueMint does not require the user to store a Jira password or Jira API token in the extension.
 
@@ -10,6 +10,7 @@ QueueMint only accesses data needed for features the user chooses to use. Depend
 
 - Jira workspace metadata such as projects, boards, sprints, issue fields, assignees, issue summaries, and issue details.
 - Jira issue content the user creates or edits through QueueMint.
+- Jira worklog data that the user explicitly asks QueueMint to read or write, including issue key, start time, duration, author, and worklog comment where Jira exposes it.
 - The active browser page when the user explicitly starts Capture, including the page URL/title, selected text, screenshots, and page dimensions.
 - Short screen/window/tab recordings selected through the browser's native picker.
 - Optional Capture diagnostics such as runtime errors, failed resource loads, navigation timing, and recent resource timing entries.
@@ -19,7 +20,7 @@ QueueMint does not continuously inspect every page the user visits. Page access 
 
 ## Jira data flow
 
-Jira remains the source of truth. QueueMint sends Jira requests to the Jira origin the user explicitly connects and authorizes. Issue creation, editing, movement, deletion, and evidence upload happen only as part of user-initiated QueueMint workflows.
+Jira remains the source of truth. QueueMint sends Jira requests to the Jira origin the user explicitly connects and authorizes. Issue creation, editing, movement, deletion, evidence upload, and worklog reads/writes happen only as part of user-initiated QueueMint workflows.
 
 Capture evidence remains local until the user chooses to create a Jira issue, save/copy evidence, or otherwise explicitly uses it.
 
@@ -51,6 +52,10 @@ If the user enables OpenAI-backed Smart Assistant:
 
 The optional data categories are current draft text, page context, active screenshot, diagnostics, Jira metadata, and recent issue titles used for duplicate suggestions.
 
+The v1.1 Worklog Assistant has a separate explicit AI action. When the user presses its AI suggestion button, the Worklog Assistant can send the user's work note plus the candidate issues' key, summary, status, assignee, estimate values, and story points to OpenAI. That data set is disclosed next to the Worklog Assistant note field before the request. Pressing the equal-split or estimate-weighted local buttons does not send data to OpenAI.
+
+Worklog AI output is only a proposed allocation. QueueMint does not silently submit the suggestion to Jira; the user can edit every duration and comment and must explicitly confirm the worklog write.
+
 When OpenAI is used, the selected data is transmitted to OpenAI and is subject to the user's OpenAI account and applicable OpenAI terms and policies.
 
 ## Local storage and retention
@@ -70,7 +75,7 @@ QueueMint does not sell user data. QueueMint does not include advertising or thi
 Data is shared externally only when required by a user-initiated workflow, for example:
 
 - with the Jira instance the user connected;
-- with OpenAI when the user explicitly enables Smart Assistant and starts a request.
+- with OpenAI when the user explicitly enables Smart Assistant or Worklog AI and starts a request.
 
 ## Browser permissions
 
@@ -87,6 +92,8 @@ Users can:
 - disable Smart Assistant by choosing Local only;
 - clear the current-session OpenAI API key;
 - choose the data categories included in each AI request;
+- review the disclosed Worklog AI data set and avoid using Worklog AI by choosing the local equal/estimate preparation methods instead;
+- edit or clear every prepared worklog before confirming a Jira write;
 - export/import only the supported portable preference/workflow backup;
 - remove QueueMint and its local extension storage through the browser.
 

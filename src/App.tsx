@@ -36,10 +36,10 @@ function App() {
     setCreating, setCreateDialogOpen, progress, setProgress, runResult, setRunResult, selectedIndex, setSelectedIndex,
     selectedForCreate, setSelectedForCreate, search, setSearch, typeFilter, setTypeFilter, placementFilter, setPlacementFilter,
     mode, setMode, locale, setLocale, theme, setTheme, accentColor, setAccentColor, reviewLayout, setReviewLayout,
-    gridColumns, setGridColumns, density, setDensity, setSettingsOpen, setBatchSettingsOpen, setJsonSheetOpen, setInspectorOpen,
+    gridColumns, setGridColumns, density, setDensity, radius, setRadius, setSettingsOpen, setBatchSettingsOpen, setJsonSheetOpen, setInspectorOpen,
     setAutoSprintNote, attachmentsByIndex, setAttachmentsByIndex, quickIssue, setQuickIssue, quickPlacement, setQuickPlacement,
     quickSprintId, setQuickSprintId, quickAttachments, setQuickAttachments, setQuickCreating, setQuickResult,
-    liveIssues, setLiveIssues, liveSelectedKeys, setLiveSelectedKeys, lastCreatedKeys, setLastCreatedKeys, setLiveScope,
+    liveIssues, setLiveIssues, liveSelectedKeys, setLiveSelectedKeys, worklogSelectedKeys, setWorklogSelectedKeys, lastCreatedKeys, setLastCreatedKeys, setLiveScope,
     setLoadingLive, setLiveActionMessage, liveBulkOpen, setLiveBulkOpen, liveBulkPriority, setLiveBulkPriority,
     liveBulkAssignee, setLiveBulkAssignee, liveBulkIssueType, setLiveBulkIssueType, liveBulkEpicLink, setLiveBulkEpicLink,
     liveBulkPlacement, setLiveBulkPlacement, liveBulkSprintId, setLiveBulkSprintId, liveBulkOriginalEstimate, setLiveBulkOriginalEstimate,
@@ -144,12 +144,12 @@ function App() {
   }
 
   useAppLifecycle({
-    jsonText, payload, selectedBoardId, theme, locale, accentColor, reviewLayout, gridColumns, density, mode,
+    jsonText, payload, selectedBoardId, theme, locale, accentColor, reviewLayout, gridColumns, density, radius, mode,
     lastCreatedKeys, onboardingComplete, savedActions, savedViews, automationRules, activityLog, hydrated, metadata,
     issueCount, selectedIndex, sprints, selectedProjectKey, liveBulkOpen, liveSelectedKeys, liveIssues, quickIssue,
     quickSprintId, loadingProject, issueTypes, connect: connectionActions.connect, loadProjectContext: projectActions.loadProjectContext,
     loadLiveBoard: liveActions.loadLiveBoard, setJsonText, setSelectedBoardId, setLocale, setTheme, setAccentColor, setReviewLayout,
-    setGridColumns, setDensity, setMode, setLastCreatedKeys, setLiveSelectedKeys, setSavedActions, setSavedViews, setAutomationRules,
+    setGridColumns, setDensity, setRadius, setMode, setLastCreatedKeys, setLiveSelectedKeys, setSavedActions, setSavedViews, setAutomationRules,
     setActivityLog, setOnboardingComplete, setHydrated, setSelectedIndex, setSelectedForCreate, setDuplicateProjectIssues,
     setDuplicateCheckedSummary, setLiveDynamicFields, setLiveDynamicError, setLiveDynamicLoading, setCommandOpen, setQuickIssue,
     setQuickSprintId, setQuickPlacement,
@@ -160,10 +160,18 @@ function App() {
   const sprintFailureCount = runResult?.results.filter((item) => item.ok && item.sprintAssigned === false).length ?? 0
   const attachmentFailureCount = runResult?.results.filter((item) => Boolean(item.attachmentError)).length ?? 0
   const estimateFailureCount = runResult?.results.filter((item) => Boolean(item.estimateError)).length ?? 0
+  const worklogFailureCount = runResult?.results.filter((item) => Boolean(item.worklogError)).length ?? 0
   const progressValue = progress.total ? (progress.done / progress.total) * 100 : 0
   const effectiveDefaultSprint = typeof payload?.defaults?.sprint === "number" ? sprints.find((item) => item.id === payload.defaults?.sprint) : undefined
   const contextPlacement = typeof payload?.defaults?.sprint === "number" ? effectiveDefaultSprint?.name ?? `Sprint ${payload.defaults.sprint}` : t.backlog
-  const creationCount = validationActions.includedIndicesForCreation().length
+  const creationIndices = validationActions.includedIndicesForCreation()
+  const creationCount = creationIndices.length
+  const creationWorklogs = creationIndices.flatMap((index) => {
+    const worklog = payload?.issues[index]?.worklog
+    return worklog ? [worklog] : []
+  })
+  const creationWorklogCount = creationWorklogs.length
+  const creationWorklogMinutes = creationWorklogs.reduce((sum, item) => sum + item.minutes, 0)
   const contextualSamplePayload: BulkPayload = {
     ...SAMPLE_PAYLOAD, project: payload?.project || project?.key || "PROJECT_KEY",
     defaults: {
@@ -179,6 +187,8 @@ function App() {
     currentProjectKey: payload?.project, selectedBoardId, projects: metadata?.projects ?? [], boards, sprints, savedActions,
     recentProjects: productivity.recentProjects, recentBoards: productivity.recentBoards, favoriteCommandIds: productivity.favoriteCommandIds,
     sprintSummary: sprintShareSummary ? { label: sprintShareSummary.sprint.name, issueCount: sprintShareSummary.issueCount } : undefined, setMode,
+    onOpenWorklog: () => { setWorklogSelectedKeys(new Set()); setMode("worklog") },
+    onWorklogSelected: () => { setWorklogSelectedKeys(new Set(liveSelectedKeys)); setMode("worklog") },
     onBulkEdit: () => { setActiveAutomationRuleId(null); setMode("manage"); setLiveBulkOpen(true) },
     onInspect: (key) => void liveActions.openIssueDetails(key), onOpenInJira: (key) => window.open(jiraBrowseUrl(key), "_blank"),
     onAssignToMe: () => void liveActions.assignLiveSelectionToMe(),
@@ -196,8 +206,8 @@ function App() {
   const derived: AppDerivedModel = {
     t, parsedError: parsed.error, payload, issues, issueCount, selectedIssue, selectedProjectKey, issueTypes, epicOptions,
     liveEpicOptions, allLabelOptions, liveAssigneeSuggestions, quickAssigneeSuggestions, quickDuplicateMatches, visibleIssueEntries,
-    successCount, failureCount, sprintFailureCount, attachmentFailureCount, estimateFailureCount, progressValue, contextPlacement,
-    creationCount, contextualSamplePayload, contextualAiPrompt, appStyle: { "--review-cols": String(gridColumns) } as CSSProperties, commandItems,
+    successCount, failureCount, sprintFailureCount, attachmentFailureCount, estimateFailureCount, worklogFailureCount, progressValue, contextPlacement,
+    creationCount, creationWorklogCount, creationWorklogMinutes, contextualSamplePayload, contextualAiPrompt, appStyle: { "--review-cols": String(gridColumns) } as CSSProperties, commandItems,
   }
 
   return <AppView state={appState} derived={derived} actions={actions} />

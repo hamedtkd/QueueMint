@@ -8,11 +8,13 @@ type AgileIssueBean = {
     summary?: string
     issuetype?: { name?: string }
     priority?: { name?: string }
-    status?: { name?: string }
+    status?: { id?: string; name?: string; statusCategory?: { key?: string; name?: string } }
     assignee?: { name?: string; key?: string; displayName?: string; avatarUrls?: Record<string, string> }
     labels?: string[]
     timeoriginalestimate?: number
     timeestimate?: number
+    updated?: string
+    resolutiondate?: string
     [key: string]: unknown
   }
 }
@@ -28,6 +30,10 @@ function mapLiveIssue(issue: AgileIssueBean, placement: "sprint" | "backlog", sp
     type: issue.fields?.issuetype?.name ?? "Task",
     priority: issue.fields?.priority?.name,
     status: issue.fields?.status?.name,
+    statusId: issue.fields?.status?.id,
+    statusCategory: issue.fields?.status?.statusCategory?.key ?? issue.fields?.status?.statusCategory?.name,
+    updated: issue.fields?.updated,
+    resolutionDate: issue.fields?.resolutiondate,
     assignee: issue.fields?.assignee?.displayName ?? issue.fields?.assignee?.name ?? issue.fields?.assignee?.key,
     assigneeId: issue.fields?.assignee?.name ?? issue.fields?.assignee?.key,
     avatarUrl: issue.fields?.assignee?.avatarUrls?.["32x32"] ?? issue.fields?.assignee?.avatarUrls?.["24x24"] ?? issue.fields?.assignee?.avatarUrls?.["48x48"],
@@ -47,7 +53,7 @@ async function getAgileIssuePage(path: string, storyPointsFieldId?: string) {
   const maxResults = 50
   while (true) {
     const separator = path.includes("?") ? "&" : "?"
-    const fields = ["summary", "issuetype", "priority", "status", "assignee", "labels", "timeoriginalestimate", "timeestimate", ...(storyPointsFieldId ? [storyPointsFieldId] : [])]
+    const fields = ["summary", "issuetype", "priority", "status", "assignee", "labels", "timeoriginalestimate", "timeestimate", "updated", "resolutiondate", ...(storyPointsFieldId ? [storyPointsFieldId] : [])]
     const page = await sendJiraRequest<{ issues?: AgileIssueBean[]; total?: number }>(`${path}${separator}startAt=${startAt}&maxResults=${maxResults}&fields=${encodeURIComponent(fields.join(","))}`)
     const batch = Array.isArray(page?.issues) ? page.issues : []
     issues.push(...batch)

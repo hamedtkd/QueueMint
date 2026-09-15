@@ -1,5 +1,75 @@
 # Changelog
 
+## 1.1.0 candidate - Customizable UI and page-scroll recovery V9
+
+- Restored normal document scrolling for Worklog while keeping the draft sidebar sticky and internally scrollable on desktop. Board and table views now use local horizontal scrolling without creating a second vertical workspace scrollbar.
+- Added a semantic, low-contrast 7px scrollbar treatment for the document, Worklog surfaces, sheets, selects, and board scrollers.
+- Made Compact / Comfortable / Spacious density modes affect controls, page spacing, navigation, Worklog cards, filters, steps, and draft rows instead of only a few issue cards.
+- Added live, persisted corner-radius customization (`None`, `Small`, `Medium`, `Large`) alongside theme, accent, and density, using the existing semantic CSS-variable system.
+- Added an appearance reset action and included radius in portable QueueMint backup/restore.
+- Kept the V7/V8 Worklog layout and code-splitting architecture without adding a new runtime UI/theme dependency.
+
+## 1.1.0 candidate - Worklog scroll and estimate clarity V8
+
+- Kept the accepted V7 Worklog layout while making the right draft sidebar a bounded internal scroll surface with a persistent submit footer, so long selections and comments remain reachable without stretching the whole page.
+- Converted desktop Worklog into a viewport-contained workspace: the issue browser and draft use local scroll areas instead of forcing a full-page scrollbar. Narrow layouts still fall back to normal document scrolling.
+- Added restrained thin scrollbars that stay visually quiet until the user interacts with a Worklog scroll surface.
+- Improved estimate semantics in Worklog views. Partial estimates now show remaining time with the original estimate available for context, and an estimate that reaches zero remains visibly represented as `0m left` instead of looking unestimated.
+- Preserved Jira's distinction between original estimate, remaining estimate, and actual worklog time.
+
+## 1.1.0 candidate - Worklog reference redesign V7
+
+- Rebuilt Worklog around the supplied dense SaaS reference: compact KPI cards, a four-step rail, explicit Jira scope, a real-board-first issue browser, and a sticky draft sidebar.
+- Added a composed Date Picker (Popover + Calendar) with previous/next-day navigation so worklogs can be reviewed and submitted for a chosen past date without adding a heavy date library.
+- Kept Jira board columns dynamic per selected board and retained Table, Board, and Cards issue views plus AI/JSON handoff.
+- Made the draft sidebar the persistent action surface for selected issues, estimate/equal/manual distribution, comments, daily-target settings, and final submit.
+- Added a route-level lazy import for Worklog so the new feature ships as its own application chunk instead of inflating the initial QueueMint bundle.
+- Kept selected-date context in AI worklog suggestions and Jira submit timestamps.
+
+## 1.1.0 candidate - Worklog UX refinement V6
+
+- Fixed duplicate filter visuals in select triggers by rendering the selected avatar/icon once instead of replaying the full selected item content.
+- Made the compact three-step workflow rail sticky below the QueueMint top bar so the current step stays visible while scrolling.
+- Restored Select visible and Clear selection only for Board and Cards views; Table view keeps its header select-all checkbox.
+- Realigned the Distribute time controls into one stable desktop grid and moved strategy help below the row so labels, segmented options, and Build review no longer drift vertically.
+- Increased scroll offsets for step navigation so sticky top navigation does not cover the destination section.
+
+## 1.1.0 candidate - Worklog UX refinement V5
+
+- Replaced the repeated tall step headers with one compact three-step workflow rail and progressive disclosure: time distribution appears after selection, and review appears only after a draft exists.
+- Removed Select visible and Clear selection action buttons. Table view now uses a native select-all checkbox in the table header.
+- Added Table, Board, and Cards views for Worklog issue selection.
+- Board view loads the selected Jira board configuration and renders its real workflow columns, so different Jira boards can expose different column counts and status mappings. If board configuration is unavailable, QueueMint falls back to grouping by Jira status.
+- Added assignee avatars and familiar status/type/activity/estimate icons to filters and issue views.
+- Made estimate/equal/AI distribution a joined segmented button group because the three options are mutually exclusive strategies.
+- Compressed the summary and Jira scope surfaces and strengthened the Daily target settings surface without mixing settings into the time-distribution task.
+- Worklog selection now drops issues hidden by the current filters to avoid submitting time against invisible rows.
+
+## 1.1.0 candidate - Worklog UX refinement
+
+- Reworked Worklog into a clear select -> distribute -> review flow with full-width aligned steps.
+- Made JSON import secondary so it cannot visually compete with the normal Worklog flow.
+- Added a primary Distribute time action after issue selection that scrolls to the distribution step.
+- Defaulted the distribution strategy to estimate-weighted splitting while keeping equal and AI modes explicit.
+- Moved Daily target settings out of the distribution task and into a separate settings section below the workflow.
+- Aligned editable minutes with their human-readable duration in the review table.
+
+
+## 1.1.0 - Worklog Assistant (unreleased)
+
+- Reworked today's logged-time sync so QueueMint merges the global Jira/Tempo read with a direct current-board worklog scan instead of silently trusting a zero-result global query.
+- Added Jira Data Center fallbacks for current-user worklogs: day JQL, explicit user identities, paginated full issue worklogs, and a bounded author-only fallback that filters actual `started` dates locally.
+- Redesigned Worklog as an explicit three-step flow: filter/select issues, prepare time, then review before Jira writes.
+- Added visible Project, Board, Sprint/Backlog, Assignee, Status, Issue Type, Activity, Estimate, and search filters directly inside Worklog.
+- Added active-filter chips and a table-style issue browser showing status, assignee, sprint, estimate, today's logged time, and last update.
+- Tightened the relevant-today filter: status alone is never proof of work. Candidates require a real today signal such as a worklog, update, or completion today, are limited to eight ranked issues, and estimates never choose tasks.
+- Decoupled Worklog selection from Manage Jira while keeping explicit entry points that can send a Manage Jira selection into Worklog.
+- Added AI handoff JSON export plus paste/upload Worklog JSON import that always lands in the editable review table before submit.
+- Added equal and estimate-weighted time distribution while keeping Estimate separate from actual work logged.
+- Added optional OpenAI worklog suggestions from the user's selected issues and explicit work note. AI remains suggestion-only and never writes directly to Jira.
+- Added optional `worklog` objects to bulk JSON creation. QueueMint creates the issue first, then adds the reviewed worklog and reports/retries worklog failures separately.
+- Kept all worklog writes preview-first. QueueMint does not silently auto-submit a daily timesheet in this candidate.
+
 ## 1.0.2 - Capture Reliability
 
 - Fixed Capture sessions staying bound to the previous browser tab.

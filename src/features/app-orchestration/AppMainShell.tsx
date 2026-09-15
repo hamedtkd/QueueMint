@@ -1,3 +1,4 @@
+import { lazy, Suspense } from "react"
 import { ArrowLeftRight, Layers3, LoaderCircle, XCircle } from "lucide-react"
 import { toast } from "sonner"
 
@@ -19,6 +20,8 @@ import { openJira } from "@/lib/jira"
 import { cn, downloadJson, downloadText } from "@/lib/utils"
 import type { AppActionGroups, AppDerivedModel, AppStateModel } from "./app-view-model"
 
+const WorklogScreen = lazy(() => import("@/features/worklog/WorklogScreen").then((module) => ({ default: module.WorklogScreen })))
+
 type Props = { state: AppStateModel; derived: AppDerivedModel; actions: AppActionGroups }
 
 export function AppMainShell({ state: s, derived: d, actions: a }: Props) {
@@ -29,7 +32,7 @@ export function AppMainShell({ state: s, derived: d, actions: a }: Props) {
       <CommandPalette open={s.commandOpen} onOpenChange={s.setCommandOpen} items={d.commandItems} title={t.commandPalette} placeholder={t.commandSearch} emptyLabel={t.commandEmpty} />
       <div className="qm-shell">
         <WorkspaceSidebar
-          mode={s.mode} setMode={s.setMode} t={t} locale={s.locale}
+          mode={s.mode} setMode={(mode) => { if (mode === "worklog") s.setWorklogSelectedKeys(new Set()); s.setMode(mode) }} t={t} locale={s.locale}
           onSettings={() => s.setSettingsOpen(true)} onProjects={() => s.setBatchSettingsOpen(true)}
           onHelp={() => toast.info(t.appName, { description: t.appTagline })}
         />
@@ -81,7 +84,7 @@ export function AppMainShell({ state: s, derived: d, actions: a }: Props) {
             </div>
           ) : null}
 
-          <main className={cn("qm-page app-container", s.mode === "review" && "qm-page-review")}>
+          <main className={cn("qm-page app-container", s.mode === "review" && "qm-page-review", s.mode === "worklog" && "qm-page-worklog")}>
             {s.mode === "dashboard" ? (
               <WorkspaceDashboard
                 t={t} locale={s.locale} project={s.project} projects={s.metadata?.projects ?? []} selectedProjectKey={payload?.project}
@@ -125,6 +128,14 @@ export function AppMainShell({ state: s, derived: d, actions: a }: Props) {
                 onMoveSelected={a.draft.moveSelectedToPlacement} onMoveIssue={a.draft.moveDraftIssue} contextPlacement={d.contextPlacement}
                 selectedBoard={s.boards.find((item) => item.id === s.selectedBoardId)} validation={s.validation} autoSprintNote={s.autoSprintNote} remoteNote={s.remoteNote}
               />
+            ) : s.mode === "worklog" ? (
+              <Suspense fallback={<div className="qm-worklog-loading"><LoaderCircle className="size-5 animate-spin" /><span>{s.locale === "fa" ? "در حال باز کردن Worklog..." : "Opening Worklog..."}</span></div>}>
+                <WorklogScreen
+                  locale={s.locale} issues={s.liveIssues} selectedKeys={s.worklogSelectedKeys} onSelectedKeysChange={s.setWorklogSelectedKeys} currentUser={s.metadata?.user}
+                  projectKey={s.project?.key ?? payload?.project} projects={s.metadata?.projects ?? []} boards={s.boards} boardId={s.selectedBoardId} sprints={s.sprints} contextLoading={s.loadingProject}
+                  onProjectChange={(key) => void a.project.chooseProject(key)} onBoardChange={(id) => void a.project.chooseBoard(id)} recordActivity={a.live.recordActivity}
+                />
+              </Suspense>
             ) : s.mode === "automation" ? (
               <AutomationScreen
                 locale={s.locale} projectKey={payload?.project} boardId={s.selectedBoardId} issues={s.liveIssues} priorities={s.metadata?.priorities ?? []}
@@ -141,6 +152,7 @@ export function AppMainShell({ state: s, derived: d, actions: a }: Props) {
                 lastCreatedKeys={s.lastCreatedKeys} scope={s.liveScope} setScope={s.setLiveScope} search={s.liveSearch} setSearch={s.setLiveSearch}
                 loading={s.loadingLive} message={s.liveActionMessage} onRefresh={() => void a.live.loadLiveBoard()} onMove={(keys, sprintId) => void a.live.moveLiveIssues(keys, sprintId)}
                 onAssignToMe={() => void a.live.assignLiveSelectionToMe()} onBulkEdit={() => { s.setActiveAutomationRuleId(null); s.setLiveBulkOpen(true) }}
+                onWorklog={() => { s.setWorklogSelectedKeys(new Set(s.liveSelectedKeys)); s.setMode("worklog") }}
                 onPreparePowerTool={a.automation.preparePowerTool}
                 savedActions={s.savedActions} onUseSavedAction={a.automation.loadSavedAction} onDeleteSavedAction={a.automation.deleteSavedAction}
                 savedViews={s.savedViews} onSaveView={a.automation.saveIssueView} onDeleteView={a.automation.deleteIssueView} onOpenIssue={(key) => void a.live.openIssueDetails(key)}

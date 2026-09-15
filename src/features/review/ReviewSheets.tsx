@@ -58,6 +58,38 @@ export function IssueInspectorSheet({ open, onOpenChange, locale, t, issue, inde
                 <Field><FieldLabel>{t.priority}</FieldLabel><PrioritySelect priorities={priorities} value={issue.priority} defaultPriority={payload.defaults?.priority} onValueChange={(priority) => onUpdate({ priority })} inheritedLabel={t.useDefault} /></Field>
                 {!isEpic ? <div className="sm:col-span-2"><EstimateInput label={t.estimate} value={issue.estimate ?? ""} onValueChange={(estimate) => onUpdate({ estimate: estimate.trim() ? estimate : undefined })} placeholder={t.estimatePlaceholder} help={timeTrackingAvailable ? t.estimateHelp : t.estimateUnavailable} inheritedText={payload.defaults?.estimate ? `${t.inheritedEstimate}: ${payload.defaults.estimate}` : undefined} /></div> : null}
               </div>
+              <div className="rounded-xl border bg-muted/15 p-3">
+                <div className="mb-3">
+                  <div className="text-sm font-medium">{locale === "fa" ? "ثبت زمان بعد از ساخت" : "Worklog after create"}</div>
+                  <div className="mt-1 text-xs leading-5 text-muted-foreground">{locale === "fa" ? "اختیاری. QueueMint اول تسک را میسازد و بعد از تایید همین Review، زمان را روی Jira ثبت میکند." : "Optional. QueueMint creates the issue first, then adds this worklog after the same review is confirmed."}</div>
+                </div>
+                <div className="grid gap-3 sm:grid-cols-[140px_1fr]">
+                  <Field>
+                    <FieldLabel>{locale === "fa" ? "دقیقه" : "Minutes"}</FieldLabel>
+                    <Input
+                      type="number"
+                      min={1}
+                      max={1440}
+                      value={issue.worklog?.minutes ?? ""}
+                      onChange={(event: ChangeEvent<HTMLInputElement>) => {
+                        if (!event.target.value) { onUpdate({ worklog: undefined }); return }
+                        const minutes = Math.round(Number(event.target.value))
+                        if (Number.isFinite(minutes) && minutes > 0) onUpdate({ worklog: { ...issue.worklog, minutes } })
+                      }}
+                      placeholder="90"
+                    />
+                  </Field>
+                  <Field>
+                    <FieldLabel>{locale === "fa" ? "کامنت Worklog" : "Worklog comment"}</FieldLabel>
+                    <Input
+                      value={issue.worklog?.comment ?? ""}
+                      disabled={!issue.worklog}
+                      onChange={(event: ChangeEvent<HTMLInputElement>) => issue.worklog ? onUpdate({ worklog: { ...issue.worklog, comment: event.target.value || undefined } }) : undefined}
+                      placeholder={locale === "fa" ? "مثلا: پیاده سازی بخش اولیه" : "e.g. Implemented the first working slice"}
+                    />
+                  </Field>
+                </div>
+              </div>
               {!isEpic ? (
                 <>
                   <Field><FieldLabel>{t.placement}</FieldLabel><PlacementToggle value={placement} onChange={(next) => onUpdate({ sprint: next === "backlog" ? null : preferredSprintId ?? null })} t={t} /></Field>

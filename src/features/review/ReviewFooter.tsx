@@ -38,7 +38,7 @@ export function ReviewActionBar({ t, issueCount, selectedCount, creationCount, v
   )
 }
 
-export function RunResultsSheet({ t, locale, runResult, successCount, failureCount, sprintFailureCount, attachmentFailureCount, estimateFailureCount, creating, onRetryFailed, onRetrySprint }: {
+export function RunResultsSheet({ t, locale, runResult, successCount, failureCount, sprintFailureCount, attachmentFailureCount, estimateFailureCount, worklogFailureCount, creating, onRetryFailed, onRetrySprint, onRetryWorklog }: {
   t: typeof copy.en | typeof copy.fa
   locale: AppLocale
   runResult: CreateRunResult | null
@@ -47,9 +47,11 @@ export function RunResultsSheet({ t, locale, runResult, successCount, failureCou
   sprintFailureCount: number
   attachmentFailureCount: number
   estimateFailureCount: number
+  worklogFailureCount: number
   creating: boolean
   onRetryFailed: () => void
   onRetrySprint: () => void
+  onRetryWorklog: () => void
 }) {
   const [open, setOpen] = useState(false)
   useEffect(() => { if (runResult) setOpen(true) }, [runResult])
@@ -64,16 +66,16 @@ export function RunResultsSheet({ t, locale, runResult, successCount, failureCou
                 <div key={`${item.index}-${item.key ?? item.summary}`} className="rounded-xl border p-3 text-sm">
                   <div className="flex items-start gap-2">
                     {item.ok ? <CheckCircle2 className="mt-0.5 size-4 shrink-0 text-emerald-600" /> : <XCircle className="mt-0.5 size-4 shrink-0 text-destructive" />}
-                    <div className="min-w-0 flex-1"><div className="font-medium">{item.summary}</div><div className="mt-1 text-xs text-muted-foreground">{item.key ?? item.error}</div>{item.sprintError ? <div className="mt-1 text-xs text-amber-600">{item.sprintError}</div> : null}{item.estimateError ? <div className="mt-1 text-xs text-amber-600">{t.estimateApplyFailed}: {item.estimateError}</div> : null}{item.attachmentError ? <div className="mt-1 text-xs text-amber-600">{t.attachmentsFailed}: {item.attachmentError}</div> : null}</div>
+                    <div className="min-w-0 flex-1"><div className="font-medium">{item.summary}</div><div className="mt-1 text-xs text-muted-foreground">{item.key ?? item.error}</div>{item.sprintError ? <div className="mt-1 text-xs text-amber-600">{item.sprintError}</div> : null}{item.estimateError ? <div className="mt-1 text-xs text-amber-600">{t.estimateApplyFailed}: {item.estimateError}</div> : null}{item.attachmentError ? <div className="mt-1 text-xs text-amber-600">{t.attachmentsFailed}: {item.attachmentError}</div> : null}{item.worklogError ? <div className="mt-1 text-xs text-amber-600">Worklog: {item.worklogError}</div> : null}</div>
                     {item.key ? <Button variant="ghost" size="icon-sm" onClick={() => window.open(jiraBrowseUrl(item.key as string), "_blank")} aria-label={t.viewIssue}><ExternalLink className="size-3.5" /></Button> : null}
                   </div>
                 </div>
               ))}
             </div>
           )}
-          {runResult ? <div className="mt-4 grid grid-cols-2 gap-2 text-xs sm:grid-cols-5"><Stat value={successCount} label={t.created} tone="success" /><Stat value={failureCount} label={t.failed} tone="danger" /><Stat value={sprintFailureCount} label="Sprint" tone="warning" /><Stat value={estimateFailureCount} label={t.estimate} tone="warning" /><Stat value={attachmentFailureCount} label="Files" tone="warning" /></div> : null}
+          {runResult ? <div className="mt-4 grid grid-cols-2 gap-2 text-xs sm:grid-cols-6"><Stat value={successCount} label={t.created} tone="success" /><Stat value={failureCount} label={t.failed} tone="danger" /><Stat value={sprintFailureCount} label="Sprint" tone="warning" /><Stat value={estimateFailureCount} label={t.estimate} tone="warning" /><Stat value={attachmentFailureCount} label="Files" tone="warning" /><Stat value={worklogFailureCount} label="Worklog" tone="warning" /></div> : null}
         </SheetBody>
-        {runResult ? <SheetFooter className="flex flex-wrap gap-2">{failureCount ? <Button variant="outline" onClick={onRetryFailed} disabled={creating}>{t.retryFailed}</Button> : null}{sprintFailureCount ? <Button variant="outline" onClick={onRetrySprint} disabled={creating}>{t.retrySprint}</Button> : null}<Button className="ms-auto" onClick={() => setOpen(false)}>{t.done}</Button></SheetFooter> : null}
+        {runResult ? <SheetFooter className="flex flex-wrap gap-2">{failureCount ? <Button variant="outline" onClick={onRetryFailed} disabled={creating}>{t.retryFailed}</Button> : null}{sprintFailureCount ? <Button variant="outline" onClick={onRetrySprint} disabled={creating}>{t.retrySprint}</Button> : null}{worklogFailureCount ? <Button variant="outline" onClick={onRetryWorklog} disabled={creating}>{locale === "fa" ? "تلاش مجدد Worklog" : "Retry worklog"}</Button> : null}<Button className="ms-auto" onClick={() => setOpen(false)}>{t.done}</Button></SheetFooter> : null}
       </SheetContent>
     </Sheet>
   )

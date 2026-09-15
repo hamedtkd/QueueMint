@@ -1,4 +1,4 @@
-import { Bolt, CircleHelp, FileJson, Layers3, LayoutDashboard, ListChecks, Settings2, Sparkles, SquareKanban } from "lucide-react"
+import { Bolt, CircleHelp, Clock3, FileJson, Layers3, LayoutDashboard, ListChecks, Settings2, Sparkles, SquareKanban } from "lucide-react"
 
 import { cn } from "@/lib/utils"
 import type { AppLocale } from "@/types"
@@ -20,6 +20,7 @@ export function WorkspaceSidebar({ mode, setMode, t, locale, onSettings, onProje
     { value: "bulk", label: t.bulk, icon: FileJson },
     { value: "review", label: t.review, icon: ListChecks },
     { value: "manage", label: t.manage, icon: SquareKanban },
+    { value: "worklog", label: locale === "fa" ? "ثبت زمان" : "Worklog", icon: Clock3 },
     { value: "automation", label: locale === "fa" ? "اتوماسیون" : "Automations", icon: Sparkles },
   ]
 

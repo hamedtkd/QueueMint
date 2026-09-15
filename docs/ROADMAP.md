@@ -107,7 +107,7 @@ Delivered:
 
 Performance work in this phase stayed conservative: no new runtime dependency was added and existing feature paths were reused. Broader automated bundle budgets belong with the v1.0 release pipeline.
 
-## v1.0 - Public release - in progress
+## v1.0 - Public release - completed
 
 Goal: publish a stable Jira-agnostic QueueMint release for broader Chrome/Edge use.
 
@@ -126,13 +126,28 @@ RC1-RC3 hardening delivered:
 - CI coverage for `release/**` branches
 - tag-driven GitHub release packaging of the exact built `dist/` directory
 
-Still required before final v1.0.0:
+v1.0.0 shipped, followed by v1.0.1 security/reliability hardening and v1.0.2 Capture source/session reliability fixes.
 
-- clean-profile Chrome and Edge install tests
-- upgrade test from v0.27.x with real persisted state
-- recorded critical Jira bridge, Capture, attachment, Bulk Edit, Command Layer, and optional Smart Assistant smoke tests
-- final store screenshots/assets and Developer Dashboard privacy disclosure
-- final security review and signed-off support matrix
+## v1.1 - Worklog Assistant - development candidate
+
+Goal: make daily Jira work logging faster without guessing silently or turning estimates into fake actuals.
+
+Current candidate:
+
+- configurable daily target with 7h 30m default
+- robust today summary that merges global Jira/Tempo-compatible discovery with a direct board scan
+- explicit Worklog-side Project/Board/Sprint/Assignee/Status/Type/Activity/Estimate filtering
+- evidence-based relevant-today filter with no status-only auto-selection
+- selected-issue and daily-remainder preparation flows
+- equal and estimate-weighted distribution
+- external AI JSON export/import through the same review table
+- optional AI allocation from an explicit work note and disclosed issue context
+- review/edit before every Jira worklog write
+- optional worklog metadata in AI/JSON bulk issue creation
+- issue-first creation with separate worklog retry on partial failure
+- Workspace, Manage Jira, sidebar, and Command Layer entry points
+
+Background silent auto-submit is intentionally not part of this candidate. Test real team usage before considering opt-in automation.
 
 ## Permanently avoid unless product strategy changes
 

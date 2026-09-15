@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react"
 
 import { loadState, saveState } from "@/lib/storage"
-import type { AppLocale, AppTheme } from "@/types"
+import type { AppLocale, AppTheme, DensityMode, RadiusMode } from "@/types"
 
 function foregroundForHex(hex: string) {
   const match = /^#([0-9a-f]{6})$/i.exec(hex)
@@ -34,6 +34,8 @@ export function usePopupAppearance() {
   const [locale, setLocaleState] = useState<AppLocale>("en")
   const [theme, setThemeState] = useState<AppTheme>("system")
   const [accentColor, setAccentColor] = useState("#087b61")
+  const [density, setDensity] = useState<DensityMode>("comfortable")
+  const [radius, setRadius] = useState<RadiusMode>("medium")
   const [isDark, setIsDark] = useState(false)
 
   useEffect(() => {
@@ -41,6 +43,8 @@ export function usePopupAppearance() {
       if (state.locale) setLocaleState(state.locale)
       if (state.theme) setThemeState(state.theme)
       if (state.accentColor) setAccentColor(state.accentColor)
+      if (state.density) setDensity(state.density)
+      if (state.radius) setRadius(state.radius)
     })
   }, [])
 
@@ -63,7 +67,9 @@ export function usePopupAppearance() {
   useEffect(() => {
     document.documentElement.lang = locale
     document.documentElement.dir = locale === "fa" ? "rtl" : "ltr"
-  }, [locale])
+    document.documentElement.dataset.density = density
+    document.documentElement.dataset.radius = radius
+  }, [locale, density, radius])
 
   function setLocale(next: AppLocale) {
     setLocaleState(next)

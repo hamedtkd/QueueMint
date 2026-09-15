@@ -1,5 +1,5 @@
 import { useState, type MouseEvent } from "react"
-import { Check, CircleDot, Clock3, Copy, GripVertical, Inbox, Leaf, Pencil, Trash2, UserRound } from "lucide-react"
+import { Check, CircleDot, Clock3, Copy, GripVertical, Inbox, Leaf, Pencil, TimerReset, Trash2, UserRound } from "lucide-react"
 import { SprintVisual } from "@/components/jira-controls"
 import { priorityTone } from "@/components/priority"
 import { Badge } from "@/components/ui/badge"
@@ -142,6 +142,10 @@ export function IssueCard({ issue, index, payload, selected, checked, sprints, l
   const listMode = layout === "list"
   const tone = priorityTone(effectivePriority)
   const ToneIcon = tone.icon
+  const worklogMinutes = issue.worklog?.minutes
+  const worklogLabel = worklogMinutes
+    ? `${Math.floor(worklogMinutes / 60) ? `${Math.floor(worklogMinutes / 60)}h ` : ""}${worklogMinutes % 60 ? `${worklogMinutes % 60}m` : ""}`.trim()
+    : undefined
 
   return (
     <article
@@ -180,6 +184,7 @@ export function IssueCard({ issue, index, payload, selected, checked, sprints, l
           ) : null}
           {issue.assignee ? <span className="inline-flex items-center gap-1 rounded-md bg-muted px-2 py-1 text-muted-foreground"><UserRound className="size-3" />{issue.assignee}</span> : null}
           {!isEpic && effectiveEstimate ? <span className="inline-flex items-center gap-1 rounded-md border bg-background/70 px-2 py-1 font-mono text-muted-foreground"><Clock3 className="size-3" />{effectiveEstimate}</span> : null}
+          {worklogLabel ? <span className="inline-flex items-center gap-1 rounded-md border border-cyan-200 bg-cyan-50 px-2 py-1 font-mono text-cyan-700 dark:border-cyan-900 dark:bg-cyan-950/35 dark:text-cyan-300"><TimerReset className="size-3" />{worklogLabel}</span> : null}
         </div>
         {issue.labels?.length ? (
           <div className="mt-2 flex min-w-0 flex-wrap gap-1">

@@ -1,5 +1,6 @@
 import type { BulkIssue, BulkPayload, CreateResultItem, CreateRunResult, FieldMap } from "@/types"
 import { applyOriginalEstimate } from "./estimation"
+import { addJiraWorklog } from "./worklogs"
 import { sendJiraRequest } from "./request"
 
 function mergeArrays<T>(a?: T[], b?: T[]) { return Array.from(new Set([...(a ?? []), ...(b ?? [])])) }
@@ -82,6 +83,21 @@ export async function createIssues(payload: BulkPayload, detectedFieldMap: Field
   for (const [sprintId, group] of bySprint) {
     try { await assignIssueKeysToSprint(sprintId, group.map((item) => item.key as string)); group.forEach((item) => { item.sprintAssigned = true }) }
     catch (error) { const message = error instanceof Error ? error.message : "Sprint assignment failed."; group.forEach((item) => { item.sprintAssigned = false; item.sprintError = message }) }
+  }
+  const worklogTargets = results.filter((result) => result.ok && result.key && payload.issues[result.index]?.worklog)
+  for (let offset = 0; offset < worklogTargets.length; offset += 4) {
+    await Promise.all(worklogTargets.slice(offset, offset + 4).map(async (result) => {
+      const config = payload.issues[result.index]?.worklog
+      if (!result.key || !config) return
+      result.worklogMinutes = config.minutes
+      result.worklogComment = config.comment
+      result.worklogStarted = config.started
+      try {
+        const started = config.started ? new Date(config.started) : new Date()
+        await addJiraWorklog(result.key, config.minutes, config.comment ?? "", Number.isNaN(started.getTime()) ? new Date() : started)
+        result.worklogAssigned = true
+      } catch (error) { result.worklogAssigned = false; result.worklogError = error instanceof Error ? error.message : "Worklog failed." }
+    }))
   }
   results.sort((a, b) => a.index - b.index)
   return { startedAt, finishedAt: new Date().toISOString(), project: payload.project, results }

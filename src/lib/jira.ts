@@ -1,8 +1,11 @@
 export { configureJiraConnection, getJiraAvatarDataUrl, getJiraConnectionStatus, jiraBrowseUrl, openJira, selectJiraTab } from "./jira/request"
 export { discoverJira, getBoardsForProject, getCreateMeta, getProject, getSprintsForBoard } from "./jira/metadata"
 export { getLiveBoardIssues, searchRecentProjectIssues } from "./jira/board-issues"
+export { getJiraBoardColumns } from "./jira/board-columns"
 export { getBulkEditableFields } from "./jira/editable-fields"
 export { cloneJiraIssue, getJiraIssueDetails } from "./jira/issue-details"
 export { bulkEditIssues, deleteJiraIssues, getIssueFieldSnapshots, getProjectPermissions, moveIssueKeysToBacklog, restoreIssueFieldSnapshots } from "./jira/bulk-actions"
 export { getAssignableUsers, getEpicsForBoard, getLabelSuggestions, getProjectEpics, getProjectLabels, uploadIssueAttachments } from "./jira/project-options"
 export { assignIssueKeysToSprint, createIssues } from "./jira/create"
+
+export { addJiraWorklog, applyWorklogDraft, getCurrentUserDayWorklogs, getDayWorklogs, getIssueWorklogs } from "./jira/worklogs"

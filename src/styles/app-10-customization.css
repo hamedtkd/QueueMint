@@ -1,0 +1,190 @@
+:root {
+  --qm-scrollbar-size: 7px;
+  --qm-scrollbar-track: transparent;
+  --qm-scrollbar-thumb: color-mix(in oklab, var(--muted-foreground) 32%, transparent);
+  --qm-scrollbar-thumb-hover: color-mix(in oklab, var(--muted-foreground) 54%, transparent);
+  --qm-density-control-h: 40px;
+  --qm-density-control-sm-h: 36px;
+  --qm-density-icon-h: 40px;
+  --qm-density-sidebar-h: 46px;
+  --qm-density-page-x: 32px;
+  --qm-density-page-y: 26px;
+  --qm-density-card-pad: 12px;
+  --qm-density-row-y: 10px;
+  --qm-density-gap: 10px;
+}
+
+html[data-density="compact"] {
+  --qm-topbar-height: 60px;
+  --qm-sidebar-width: 220px;
+  --qm-density-control-h: 34px;
+  --qm-density-control-sm-h: 30px;
+  --qm-density-icon-h: 34px;
+  --qm-density-sidebar-h: 40px;
+  --qm-density-page-x: 24px;
+  --qm-density-page-y: 20px;
+  --qm-density-card-pad: 9px;
+  --qm-density-row-y: 7px;
+  --qm-density-gap: 7px;
+}
+
+html[data-density="spacious"] {
+  --qm-topbar-height: 72px;
+  --qm-sidebar-width: 244px;
+  --qm-density-control-h: 44px;
+  --qm-density-control-sm-h: 40px;
+  --qm-density-icon-h: 44px;
+  --qm-density-sidebar-h: 52px;
+  --qm-density-page-x: 40px;
+  --qm-density-page-y: 32px;
+  --qm-density-card-pad: 16px;
+  --qm-density-row-y: 13px;
+  --qm-density-gap: 14px;
+}
+
+html[data-radius="none"] { --radius: 0rem; --qm-panel-radius: 0px; --qm-control-radius: 0px; }
+html[data-radius="small"] { --radius: .375rem; --qm-panel-radius: 7px; --qm-control-radius: 5px; }
+html[data-radius="medium"] { --radius: .625rem; --qm-panel-radius: 11px; --qm-control-radius: 8px; }
+html[data-radius="large"] { --radius: .875rem; --qm-panel-radius: 15px; --qm-control-radius: 12px; }
+
+html {
+  scrollbar-gutter: stable;
+  scrollbar-width: thin;
+  scrollbar-color: var(--qm-scrollbar-thumb) var(--qm-scrollbar-track);
+}
+
+html::-webkit-scrollbar,
+body::-webkit-scrollbar {
+  width: var(--qm-scrollbar-size);
+  height: var(--qm-scrollbar-size);
+}
+
+html::-webkit-scrollbar-track,
+body::-webkit-scrollbar-track {
+  background: var(--qm-scrollbar-track);
+}
+
+html::-webkit-scrollbar-thumb,
+body::-webkit-scrollbar-thumb {
+  border: 1px solid transparent;
+  border-radius: 999px;
+  background: var(--qm-scrollbar-thumb);
+  background-clip: padding-box;
+}
+
+html::-webkit-scrollbar-thumb:hover,
+body::-webkit-scrollbar-thumb:hover { background: var(--qm-scrollbar-thumb-hover); }
+
+:where(.qm-scrollbar, .qm-worklog-scroll, .board-scroll, .qm-popup-body, [data-slot="sheet-body"], [data-slot="select-content"]) {
+  scrollbar-width: thin;
+  scrollbar-color: var(--qm-scrollbar-thumb) transparent;
+}
+
+:where(.qm-scrollbar, .qm-worklog-scroll, .board-scroll, .qm-popup-body, [data-slot="sheet-body"], [data-slot="select-content"])::-webkit-scrollbar {
+  width: var(--qm-scrollbar-size);
+  height: var(--qm-scrollbar-size);
+}
+
+:where(.qm-scrollbar, .qm-worklog-scroll, .board-scroll, .qm-popup-body, [data-slot="sheet-body"], [data-slot="select-content"])::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+:where(.qm-scrollbar, .qm-worklog-scroll, .board-scroll, .qm-popup-body, [data-slot="sheet-body"], [data-slot="select-content"])::-webkit-scrollbar-thumb {
+  border: 1px solid transparent;
+  border-radius: 999px;
+  background: var(--qm-scrollbar-thumb);
+  background-clip: padding-box;
+}
+
+:where(.qm-scrollbar, .qm-worklog-scroll, .board-scroll, .qm-popup-body, [data-slot="sheet-body"], [data-slot="select-content"])::-webkit-scrollbar-thumb:hover {
+  background: var(--qm-scrollbar-thumb-hover);
+}
+
+html[data-density] .qm-page { padding: var(--qm-density-page-y) var(--qm-density-page-x) 58px; }
+html[data-density] .qm-sidebar-link { min-height: var(--qm-density-sidebar-h); }
+html[data-density] [data-slot="input"],
+html[data-density] [data-slot="select-trigger"],
+html[data-density] [data-slot="combobox-input-group"] { height: var(--qm-density-control-h); min-height: var(--qm-density-control-h); }
+html[data-density] [data-slot="button"][data-size="default"] { height: var(--qm-density-control-h); min-height: var(--qm-density-control-h); }
+html[data-density] [data-slot="button"][data-size="sm"] { height: var(--qm-density-control-sm-h); min-height: var(--qm-density-control-sm-h); }
+html[data-density] [data-slot="button"][data-size="icon"] { width: var(--qm-density-icon-h); height: var(--qm-density-icon-h); }
+html[data-density] [data-slot="card-content"] { padding-block: var(--qm-density-card-pad); }
+
+
+html[data-density="compact"] .qm-sidebar-nav { gap: 2px; padding-block: 12px 10px; }
+html[data-density="spacious"] .qm-sidebar-nav { gap: 6px; padding-block: 22px 16px; }
+html[data-density="compact"] .qm-topbar-inner { gap: 14px; padding-inline: 22px 20px; }
+html[data-density="spacious"] .qm-topbar-inner { gap: 24px; padding-inline: 36px 30px; }
+html[data-density="compact"] .qm-popup-body { padding: 8px; }
+html[data-density="spacious"] .qm-popup-body { padding: 16px; }
+html[data-density="compact"] .qm-popup-action-card { min-height: 76px; padding: 9px; }
+html[data-density="spacious"] .qm-popup-action-card { min-height: 96px; padding: 15px; }
+
+html[data-radius] :where(.qm-sidebar-link, .issue-card, .live-issue-card, .qm-popup-page-card, .qm-popup-action-card, .qm-smart-card, .qm-preflight-card, .capture-canvas-shell) {
+  border-radius: var(--qm-panel-radius);
+}
+html[data-radius] .qm-popup-action-icon { border-radius: var(--qm-control-radius); }
+
+html[data-radius] :where([data-slot="button"], [data-slot="input"], [data-slot="select-trigger"], [data-slot="combobox-input-group"]) {
+  border-radius: var(--qm-control-radius);
+}
+html[data-radius] :where([data-slot="card"], [data-slot="sheet-content"], .qm-worklog-kpi, .qm-worklog-stepper, .qm-worklog-scope, .qm-worklog-issues-panel, .qm-worklog-draft-sidebar) {
+  border-radius: var(--qm-panel-radius);
+}
+
+html[data-density="compact"] .qm-worklog-kpi { padding: 9px 10px 8px; }
+html[data-density="spacious"] .qm-worklog-kpi { padding: 15px 17px 13px; }
+html[data-density="compact"] .qm-worklog-step { min-height: 46px; padding: 6px 9px; }
+html[data-density="spacious"] .qm-worklog-step { min-height: 62px; padding: 10px 14px; }
+html[data-density="compact"] .qm-worklog-scope { gap: 7px; padding: 8px 9px; }
+html[data-density="spacious"] .qm-worklog-scope { gap: 13px; padding: 14px 15px; }
+html[data-density="compact"] .qm-worklog-issues-head { padding: 9px 11px 8px; }
+html[data-density="spacious"] .qm-worklog-issues-head { padding: 15px 17px 13px; }
+html[data-density="compact"] .qm-worklog-filter-panel { gap: 6px; padding: 7px 10px; }
+html[data-density="spacious"] .qm-worklog-filter-panel { gap: 11px; padding: 13px 17px; }
+html[data-density="compact"] .qm-worklog-issue-card { padding: 7px; }
+html[data-density="spacious"] .qm-worklog-issue-card { padding: 12px; }
+html[data-density="compact"] .qm-worklog-draft-row { gap: 6px; padding: 7px 9px; }
+html[data-density="spacious"] .qm-worklog-draft-row { gap: 10px; padding: 12px 14px; }
+
+.qm-page-worklog {
+  height: auto;
+  min-height: calc(100dvh - var(--qm-topbar-height));
+  overflow: visible;
+}
+.qm-worklog-page,
+.qm-worklog-layout { height: auto; }
+.qm-worklog-layout { min-height: calc(100dvh - var(--qm-topbar-height) - 38px); align-items: start; }
+.qm-worklog-main,
+.qm-worklog-issue-stage,
+.qm-worklog-issues-panel,
+.qm-worklog-data-view,
+.qm-worklog-board-wrap { min-height: 0; }
+.qm-worklog-issues-panel { overflow: visible; }
+.qm-worklog-data-view { flex: none; }
+.qm-worklog-board-wrap { display: block; flex: none; }
+.qm-worklog-board-scroll { max-height: none; overflow-x: auto; overflow-y: hidden; }
+.qm-worklog-table-scroll { max-height: none; overflow-x: auto; overflow-y: hidden; }
+.qm-worklog-cards-scroll { max-height: none; overflow: visible; }
+.qm-worklog-draft-sidebar {
+  height: auto;
+  max-height: calc(100dvh - var(--qm-topbar-height) - 20px);
+}
+.qm-worklog-draft-scroll { min-height: 0; overflow-y: auto; }
+
+@media (max-width: 1120px) {
+  .qm-worklog-draft-sidebar { position: relative; inset-block-start: auto; max-height: none; }
+  .qm-worklog-draft-scroll { overflow: visible; }
+  .qm-worklog-draft-list { max-height: 320px; overflow-y: auto; }
+}
+
+@media (pointer: coarse) {
+  html[data-density] [data-slot="button"],
+  html[data-density] [data-slot="input"],
+  html[data-density] [data-slot="select-trigger"],
+  html[data-density] [data-slot="combobox-input-group"] { min-height: 44px; }
+}
+
+@media (max-width: 760px) {
+  html[data-density] .qm-page { padding-inline: 12px; }
+}

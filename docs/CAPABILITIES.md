@@ -1,6 +1,8 @@
 # QueueMint capabilities
 
-Current stable release: v1.0.0.
+Current stable release: v1.0.2.
+
+Development candidate: v1.1.0 Worklog Assistant. The Worklog Assistant section below describes candidate behavior until v1.1 is released.
 
 This document describes what is implemented today. It intentionally separates current capability from the future roadmap.
 
@@ -184,6 +186,30 @@ QueueMint does not intend to replace Jira's dashboard/reporting system.
 - Story Points.
 - supported dynamic Jira fields.
 - short-lived undo/history snapshots for QueueMint bulk operations.
+
+## Worklog Assistant
+
+The v1.1 development candidate adds a preview-first time logging workflow while keeping Jira worklogs as the system of record.
+
+- Configurable daily target stored locally in QueueMint, defaulting to 7h 30m.
+- Reads current-user worklogs for today through Jira worklog JQL, explicit Data Center user identities, paginated issue worklogs, an optional Tempo Data Center read, and a direct current-board scan merged by issue/worklog id.
+- Global daily time and current-board daily time are shown separately so scope is visible.
+- Project, Board, Sprint/Backlog, Assignee, Status, Issue Type, Activity, Estimate, and key/summary search filters live directly in Worklog.
+- Worklog issue selection supports Table, Cards, and Board views. The Board view reads the selected Jira board configuration so each board keeps its own workflow columns, with exact-status fallback when that configuration is unavailable.
+- Assignee avatars and familiar type/status/filter icons are reused across Worklog filters and issue views.
+- Active filters are shown as visible chips rather than hidden selection rules.
+- Worklog selection is independent from Manage Jira; explicit Manage Jira and Command Layer actions can copy a current selection into Worklog when desired.
+- The relevant-today filter requires evidence from today: an existing worklog, an update today, or completion today. In Progress by itself is not enough. At most eight issues are ranked.
+- Estimates never decide what the user worked on. They can only weight a time split after the user has selected issues.
+- Each issue row exposes status, assignee, sprint/backlog, estimate, time already logged today, and last update.
+- Worklog context can be copied/downloaded as an AI-ready JSON package with selected/visible issue metadata and already-logged time.
+- AI-produced JSON can be pasted or uploaded and is converted into the same editable review table before any Jira write.
+- Optional OpenAI allocation uses only the explicit selected issue set plus the user's work note and disclosed context.
+- Every prepared entry exposes editable minutes and an optional worklog comment before submit.
+- Confirmed worklogs are written sequentially through Jira's issue worklog REST path with remaining-estimate adjustment disabled.
+- Partial failure keeps failed entries in the draft for correction/retry and records successful QueueMint activity locally.
+- Bulk JSON issue creation accepts an optional `worklog` object. QueueMint creates the Jira issue first, then applies the worklog so worklog failure does not roll back issue creation.
+- QueueMint does not silently auto-submit a daily target.
 
 ## Jira Power Tools
 

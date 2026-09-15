@@ -4,11 +4,11 @@ Use this file when starting a new ChatGPT, coding-agent, or developer session. R
 
 ## Current state
 
-Current stable release: **v1.0.0**, based on the completed v0.27.0 product feature set and v1.0 public-release hardening.
+Current stable release: **v1.0.2**. The current development candidate is **v1.1.0 Worklog Assistant**.
 
 The architecture refactor is complete. The strict 300-line production code limit has no exceptions. `App.tsx` and `Popup.tsx` are orchestration/composition layers rather than monoliths.
 
-Capture Pro, Smart Assistant, Jira Power Tools, and Command Layer are complete. The product feature set through **v0.27 Productivity & Polish** is complete. The current work is v1.0 public-release hardening: permissions/privacy, compatibility, packaging/CI, clean-profile and upgrade validation, store preparation, and final security review.
+Capture Pro, Smart Assistant, Jira Power Tools, Command Layer, and the v1.0 release hardening are complete. v1.0.1 and v1.0.2 added security/reliability maintenance. Current work is the preview-first v1.1 Worklog Assistant candidate.
 
 ## Product definition
 
@@ -20,6 +20,7 @@ Primary jobs:
 2. Make repetitive or multi-step Jira actions faster and safer.
 3. Provide reusable personal macros, commands, and local productivity shortcuts.
 4. Add intelligence where it reduces typing/searching while keeping the user in control.
+5. Reduce Jira worklog friction without treating estimates as actual work or silently submitting a timesheet.
 
 Before adding a feature, check whether Jira already solves it well. Do not rebuild native Jira reporting, sprint planning, release management, workflow administration, project administration, permissions, or a full automation engine.
 

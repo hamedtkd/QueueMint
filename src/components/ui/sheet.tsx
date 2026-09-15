@@ -55,7 +55,7 @@ function SheetDescription({ className, ...props }: React.ComponentPropsWithoutRe
 }
 
 function SheetBody({ className, ...props }: React.ComponentProps<"div">) {
-  return <div className={cn("min-h-0 flex-1 overflow-y-auto p-5", className)} {...props} />
+  return <div data-slot="sheet-body" className={cn("min-h-0 flex-1 overflow-y-auto p-5", className)} {...props} />
 }
 
 function SheetFooter({ className, ...props }: React.ComponentProps<"div">) {

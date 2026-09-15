@@ -1,5 +1,5 @@
 import { type ChangeEvent } from "react"
-import { Bookmark, ChevronLeft, ChevronRight, CircleDot, Eye, History, Inbox, Layers3, Leaf, List, ListChecks, LoaderCircle, Play, RefreshCcw, Save, Search, SlidersHorizontal, SquareKanban, Trash2, UserCheck, UsersRound, XCircle } from "lucide-react"
+import { Bookmark, ChevronLeft, ChevronRight, CircleDot, Eye, History, Inbox, Layers3, Leaf, List, ListChecks, LoaderCircle, Play, RefreshCcw, TimerReset, Save, Search, SlidersHorizontal, SquareKanban, Trash2, UserCheck, UsersRound, XCircle } from "lucide-react"
 import { SimpleSelect, SprintVisual } from "@/components/jira-controls"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -16,7 +16,7 @@ import { useManageJiraModel } from "./useManageJiraModel"
 type ManageJiraViewProps = ManageJiraScreenProps & ReturnType<typeof useManageJiraModel>
 
 export function ManageJiraView(args: ManageJiraViewProps) {
-  const { t, locale, project, boards, selectedBoardId, boardLoading, onBoardChange, sprints, issues, selectedKeys, scope, setScope, search, setSearch, loading, message, onRefresh, onMove, onAssignToMe, onBulkEdit, onPreparePowerTool, savedActions, onUseSavedAction, onDeleteSavedAction, onDeleteView, onOpenIssue, historyCount, onHistory, onDelete, draggedKey, setDraggedKey, overLane, setOverLane, moveTarget, view, setView, filtersOpen, setFiltersOpen, saveViewOpen, setSaveViewOpen, saveViewName, setSaveViewName, typeFilter, setTypeFilter, priorityFilter, setPriorityFilter, statusFilter, setStatusFilter, assigneeFilter, setAssigneeFilter, sprintFilter, setSprintFilter, labelFilter, setLabelFilter, estimateFilter, setEstimateFilter, myIssuesOnly, setMyIssuesOnly, setPage, pageSize, setPageSize, currentUser, matchingSavedViews, createdIssues, activeFilterCount, visibleIssues, hasActiveFiltering, createdScopeCount, boardScopeCount, pageCount, safePage, pageIssues, groups, allPageSelected, allMatchingSelected, moveItems, toggle, moveSelection, clearFilters, applySavedView, saveCurrentView, selectPage, selectMatching, filterItems } = args
+  const { t, locale, project, boards, selectedBoardId, boardLoading, onBoardChange, sprints, issues, selectedKeys, scope, setScope, search, setSearch, loading, message, onRefresh, onMove, onAssignToMe, onBulkEdit, onWorklog, onPreparePowerTool, savedActions, onUseSavedAction, onDeleteSavedAction, onDeleteView, onOpenIssue, historyCount, onHistory, onDelete, draggedKey, setDraggedKey, overLane, setOverLane, moveTarget, view, setView, filtersOpen, setFiltersOpen, saveViewOpen, setSaveViewOpen, saveViewName, setSaveViewName, typeFilter, setTypeFilter, priorityFilter, setPriorityFilter, statusFilter, setStatusFilter, assigneeFilter, setAssigneeFilter, sprintFilter, setSprintFilter, labelFilter, setLabelFilter, estimateFilter, setEstimateFilter, myIssuesOnly, setMyIssuesOnly, setPage, pageSize, setPageSize, currentUser, matchingSavedViews, createdIssues, activeFilterCount, visibleIssues, hasActiveFiltering, createdScopeCount, boardScopeCount, pageCount, safePage, pageIssues, groups, allPageSelected, allMatchingSelected, moveItems, toggle, moveSelection, clearFilters, applySavedView, saveCurrentView, selectPage, selectMatching, filterItems } = args
 return (
   <div className="qm-screen animate-in fade-in slide-in-from-bottom-2 duration-200">
     <div className="qm-page-heading qm-page-heading-row flex flex-wrap items-end justify-between gap-4">
@@ -151,6 +151,7 @@ return (
             <SimpleSelect value={moveTarget} onValueChange={moveSelection} className="min-w-[220px]" placeholder={t.moveSelected} disabled={!selectedKeys.size} items={moveItems} />
             <Button variant="outline" size="sm" onClick={onAssignToMe} disabled={!selectedKeys.size || !currentUser}><UserCheck className="size-4" />{t.assignToMe}</Button>
             <Button variant="outline" size="sm" onClick={onBulkEdit} disabled={!selectedKeys.size}><UsersRound className="size-4" />{t.bulkEdit}</Button>
+            <Button variant="outline" size="sm" onClick={onWorklog} disabled={!selectedKeys.size}><TimerReset className="size-4" />{locale === "fa" ? "ثبت زمان" : "Log work"}</Button>
             <Button variant="ghost" size="sm" className="text-destructive hover:text-destructive" onClick={onDelete} disabled={!selectedKeys.size}><Trash2 className="size-4" />{t.deleteSelected}</Button>
           </div>
         </div>

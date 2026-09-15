@@ -7,19 +7,19 @@ import { loadState, saveState, type ActivityEntry, type AutomationRule, type Sav
 import { LEGACY_SAMPLE_JSON } from "@/sample"
 import type {
   AppLocale, AppTheme, BulkIssue, BulkPayload, CreateRunResult, DensityMode, JiraEditableField,
-  JiraIssueSearchResult, JiraLiveIssue, JiraMetadata, JiraSprint, ReviewLayout,
+  JiraIssueSearchResult, JiraLiveIssue, JiraMetadata, JiraSprint, RadiusMode, ReviewLayout,
 } from "@/types"
 import type { StateSetter } from "./types"
 
 type LifecycleOptions = {
   jsonText: string; payload: BulkPayload | undefined; selectedBoardId: number | null; theme: AppTheme; locale: AppLocale; accentColor: string
-  reviewLayout: ReviewLayout; gridColumns: 2 | 3 | 4; density: DensityMode; mode: Mode; lastCreatedKeys: string[]; onboardingComplete: boolean
+  reviewLayout: ReviewLayout; gridColumns: 2 | 3 | 4; density: DensityMode; radius: RadiusMode; mode: Mode; lastCreatedKeys: string[]; onboardingComplete: boolean
   savedActions: SavedWorkspaceAction[]; savedViews: SavedIssueView[]; automationRules: AutomationRule[]; activityLog: ActivityEntry[]; hydrated: boolean
   metadata: JiraMetadata | null; issueCount: number; selectedIndex: number; sprints: JiraSprint[]; selectedProjectKey: string | undefined
   liveBulkOpen: boolean; liveSelectedKeys: Set<string>; liveIssues: JiraLiveIssue[]; quickIssue: BulkIssue; quickSprintId: number | null | undefined; loadingProject: boolean
   issueTypes: Array<{ name: string }>; connect: (showFeedback?: boolean) => Promise<boolean>; loadProjectContext: (key: string) => Promise<void>; loadLiveBoard: () => Promise<void>
   setJsonText: StateSetter<string>; setSelectedBoardId: StateSetter<number | null>; setLocale: StateSetter<AppLocale>; setTheme: StateSetter<AppTheme>
-  setAccentColor: StateSetter<string>; setReviewLayout: StateSetter<ReviewLayout>; setGridColumns: StateSetter<2 | 3 | 4>; setDensity: StateSetter<DensityMode>; setMode: StateSetter<Mode>
+  setAccentColor: StateSetter<string>; setReviewLayout: StateSetter<ReviewLayout>; setGridColumns: StateSetter<2 | 3 | 4>; setDensity: StateSetter<DensityMode>; setRadius: StateSetter<RadiusMode>; setMode: StateSetter<Mode>
   setLastCreatedKeys: StateSetter<string[]>; setLiveSelectedKeys: StateSetter<Set<string>>; setSavedActions: StateSetter<SavedWorkspaceAction[]>; setSavedViews: StateSetter<SavedIssueView[]>
   setAutomationRules: StateSetter<AutomationRule[]>; setActivityLog: StateSetter<ActivityEntry[]>; setOnboardingComplete: StateSetter<boolean>; setHydrated: StateSetter<boolean>
   setSelectedIndex: StateSetter<number>; setSelectedForCreate: StateSetter<Set<number>>; setDuplicateProjectIssues: StateSetter<JiraIssueSearchResult[]>; setDuplicateCheckedSummary: StateSetter<string>
@@ -35,7 +35,7 @@ export function useAppLifecycle(options: LifecycleOptions) {
       if (state.jsonText && !legacyBundledSample) o.setJsonText(state.jsonText)
       if (state.selectedBoardId && !legacyBundledSample) o.setSelectedBoardId(state.selectedBoardId)
       if (state.locale) o.setLocale(state.locale); if (state.theme) o.setTheme(state.theme); if (state.accentColor) o.setAccentColor(state.accentColor)
-      if (state.reviewLayout) o.setReviewLayout(state.reviewLayout); if (state.gridColumns) o.setGridColumns(state.gridColumns); if (state.density) o.setDensity(state.density); if (state.lastMode) o.setMode(state.lastMode)
+      if (state.reviewLayout) o.setReviewLayout(state.reviewLayout); if (state.gridColumns) o.setGridColumns(state.gridColumns); if (state.density) o.setDensity(state.density); if (state.radius) o.setRadius(state.radius); if (state.lastMode) o.setMode(state.lastMode)
       if (state.lastCreatedKeys?.length) { o.setLastCreatedKeys(state.lastCreatedKeys); o.setLiveSelectedKeys(new Set(state.lastCreatedKeys)) }
       if (state.savedActions?.length) o.setSavedActions(state.savedActions); if (state.savedViews?.length) o.setSavedViews(state.savedViews)
       if (state.automationRules?.length) o.setAutomationRules(state.automationRules); if (state.activityLog?.length) o.setActivityLog(state.activityLog)
@@ -57,18 +57,18 @@ export function useAppLifecycle(options: LifecycleOptions) {
   }, [o.theme, o.accentColor])
 
   useEffect(() => {
-    document.documentElement.lang = o.locale; document.documentElement.dir = o.locale === "fa" ? "rtl" : "ltr"; document.documentElement.dataset.density = o.density
-  }, [o.locale, o.density])
+    document.documentElement.lang = o.locale; document.documentElement.dir = o.locale === "fa" ? "rtl" : "ltr"; document.documentElement.dataset.density = o.density; document.documentElement.dataset.radius = o.radius
+  }, [o.locale, o.density, o.radius])
 
   useEffect(() => {
     const timer = window.setTimeout(() => void saveState({
       jsonText: o.jsonText, selectedProject: o.payload?.project, selectedBoardId: o.selectedBoardId ?? undefined,
       theme: o.theme, locale: o.locale, accentColor: o.accentColor, reviewLayout: o.reviewLayout, gridColumns: o.gridColumns,
-      density: o.density, lastMode: o.mode, lastCreatedKeys: o.lastCreatedKeys, onboardingComplete: o.onboardingComplete,
+      density: o.density, radius: o.radius, lastMode: o.mode, lastCreatedKeys: o.lastCreatedKeys, onboardingComplete: o.onboardingComplete,
       savedActions: o.savedActions, savedViews: o.savedViews, automationRules: o.automationRules, activityLog: o.activityLog,
     }), 250)
     return () => window.clearTimeout(timer)
-  }, [o.jsonText, o.payload?.project, o.selectedBoardId, o.theme, o.locale, o.accentColor, o.reviewLayout, o.gridColumns, o.density, o.mode, o.lastCreatedKeys, o.onboardingComplete, o.savedActions, o.savedViews, o.automationRules, o.activityLog])
+  }, [o.jsonText, o.payload?.project, o.selectedBoardId, o.theme, o.locale, o.accentColor, o.reviewLayout, o.gridColumns, o.density, o.radius, o.mode, o.lastCreatedKeys, o.onboardingComplete, o.savedActions, o.savedViews, o.automationRules, o.activityLog])
 
   useEffect(() => { if (o.hydrated) void o.connect(false) }, [o.hydrated])
   useEffect(() => {
@@ -92,7 +92,7 @@ export function useAppLifecycle(options: LifecycleOptions) {
     })
   }, [o.issueCount, o.selectedIndex])
   useEffect(() => {
-    if ((o.mode === "manage" || o.mode === "dashboard" || o.mode === "quick" || o.mode === "automation") && o.selectedBoardId && o.metadata) void o.loadLiveBoard()
+    if ((o.mode === "manage" || o.mode === "dashboard" || o.mode === "quick" || o.mode === "automation" || o.mode === "worklog") && o.selectedBoardId && o.metadata) void o.loadLiveBoard()
   }, [o.mode, o.selectedBoardId, o.sprints.length, o.metadata])
   useEffect(() => {
     o.setDuplicateProjectIssues([]); o.setDuplicateCheckedSummary(""); o.setQuickSprintId(undefined)
