@@ -13,31 +13,62 @@ jobs:
   package:
     runs-on: ubuntu-latest
     timeout-minutes: 15
+
     steps:
       - name: Checkout
         uses: actions/checkout@v7
+
       - name: Use Node 22
         uses: actions/setup-node@v7
         with:
           node-version: "22"
+
       - name: Install dependencies
-        run: npm install
+        run: npm ci
+
+      - name: Verify tag matches app version
+        if: startsWith(github.ref, 'refs/tags/')
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          tag_version="${GITHUB_REF_NAME#v}"
+          package_version="$(node -p "require('./package.json').version")"
+
+          if [ "$tag_version" != "$package_version" ]; then
+            echo "Release tag version $tag_version does not match package.json version $package_version"
+            exit 1
+          fi
+
       - name: Verify release source
         run: npm run verify
+
       - name: Package extension
         shell: bash
         run: |
           set -euo pipefail
+
           label="${GITHUB_REF_NAME:-manual-${GITHUB_RUN_NUMBER}}"
-          archive="queuemint-${label}.zip"
-          (cd dist && zip -qr "../${archive}" .)
-          echo "ARCHIVE=${archive}" >> "$GITHUB_ENV"
+
+          versioned_archive="queuemint-${label}.zip"
+          latest_archive="QueueMint-extension.zip"
+
+          (cd dist && zip -qr "../${versioned_archive}" .)
+
+          cp "${versioned_archive}" "${latest_archive}"
+
+          echo "VERSIONED_ARCHIVE=${versioned_archive}" >> "$GITHUB_ENV"
+          echo "LATEST_ARCHIVE=${latest_archive}" >> "$GITHUB_ENV"
+
       - name: Upload workflow artifact
         uses: actions/upload-artifact@v7
         with:
           name: QueueMint-extension
-          path: ${{ env.ARCHIVE }}
+          path: |
+            ${{ env.VERSIONED_ARCHIVE }}
+            ${{ env.LATEST_ARCHIVE }}
           if-no-files-found: error
+
       - name: Create or update GitHub release
         if: startsWith(github.ref, 'refs/tags/')
         env:
@@ -45,9 +76,19 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+
           tag="${GITHUB_REF_NAME}"
+
           if gh release view "$tag" >/dev/null 2>&1; then
-            gh release upload "$tag" "$ARCHIVE" --clobber
+            gh release upload "$tag" \
+              "$VERSIONED_ARCHIVE" \
+              "$LATEST_ARCHIVE" \
+              --clobber
           else
-            gh release create "$tag" "$ARCHIVE" --generate-notes --title "QueueMint $tag"
+            gh release create "$tag" \
+              "$VERSIONED_ARCHIVE" \
+              "$LATEST_ARCHIVE" \
+              --generate-notes \
+              --latest \
+              --title "QueueMint $tag"
           fi
