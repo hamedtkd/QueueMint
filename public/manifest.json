@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "QueueMint",
-  "version": "1.4.1",
+  "version": "1.4.2",
   "description": "Jira companion for bug capture, evidence, fast issue creation, safe bulk actions, reusable workflows, and shortcuts.",
   "action": {
     "default_title": "Open QueueMint",
@@ -47,7 +47,7 @@
       "description": "Open the QueueMint command palette (fallback shortcut)"
     }
   },
-  "version_name": "1.4.1 Direct Jira Move & Popup Editor Fix",
+  "version_name": "1.4.2 Direct Jira Move & Popup Editor Fix",
   "short_name": "QueueMint",
   "homepage_url": "https://github.com/hamedtkd/QueueMint",
   "content_security_policy": {

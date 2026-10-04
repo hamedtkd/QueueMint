@@ -4,9 +4,9 @@ QueueMint is a Chrome/Edge companion for Jira. It makes the work around Jira fas
 
 The product focuses on workflows that are slow, repetitive, fragmented, or awkward in the native Jira UI: evidence-rich bug capture, fast issue creation, safe bulk actions, reusable macros, command-driven actions, and personal productivity shortcuts.
 
-Current stable release: **v1.4.1**.
+Current stable release: **v1.4.2**.
 
-Current release line: **v1.4.1 Direct Jira Move & Popup Editor Fix**.
+Current release line: **v1.4.2 Direct Jira Move & Popup Editor Fix**.
 
 ## Product principle
 
@@ -221,5 +221,4 @@ Do not commit `node_modules/`, `dist/`, local logs, secrets, or private Jira dat
 
 The large architecture refactor is complete. All production source files are under the 300-line limit. The product roadmap has now returned to user-facing capability work, with Capture Pro as the first post-refactor phase.
 
-Current release: **v1.4.1**. Popup Jira parity, Direct Jira Move, Appearance Studio, Worklog Board Sync, Manage Jira Filter UX, Jira Create Safety, Calendar, and Evidence Upload UX are part of the supported release line.
-
+Current release: **v1.4.2**. Popup Jira parity, Direct Jira Move, Appearance Studio, Worklog Board Sync, Manage Jira Filter UX, Jira Create Safety, Calendar, and Evidence Upload UX are part of the supported release line.
