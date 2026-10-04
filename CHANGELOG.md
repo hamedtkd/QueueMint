@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.4.2 - Clean Source Release
+
+- Removed four accidental root-level files introduced during the v1.4.0 release preparation.
+- Completes the source cleanup that did not actually land in v1.4.1.
+- No QueueMint runtime behavior changed from v1.4.1.
+- Reissued the clean repository source and extension package as v1.4.2.
+
 ## 1.4.1 - Release Source Cleanup
 
 - Removed accidental root-level files introduced during the v1.4.0 release preparation.
@@ -416,4 +423,3 @@
 - Added Jira connection, issue creation, profile/board context, theme/font/UI foundations, and initial bulk-edit work.
 
 For older detailed notes, see `docs/HISTORY-v0.22.md`.
-
