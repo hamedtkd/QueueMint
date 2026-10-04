@@ -1,5 +1,6 @@
 import { Boxes, CalendarDays, Clock3, Gauge, PackageCheck, Tags } from "lucide-react"
 
+import { LabelsCombobox } from "@/components/jira-controls"
 import { DatePicker } from "@/components/ui/date-picker"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/capture-select"
@@ -14,6 +15,8 @@ export type PopupIssueExtraFieldsProps = {
   metadata: JiraMetadata
   projectInfo: JiraProject | null
   issueType: string
+  projectKey: string
+  labelOptions: string[]
   createFieldIds: string[] | null
   estimate: string
   storyPoints: string
@@ -30,7 +33,7 @@ export type PopupIssueExtraFieldsProps = {
 }
 
 export function PopupIssueExtraFields(props: PopupIssueExtraFieldsProps) {
-  const { t, locale, metadata, projectInfo, issueType, createFieldIds, estimate, storyPoints, labels, dueDate, component, fixVersion } = props
+  const { t, locale, metadata, projectInfo, issueType, projectKey, labelOptions, createFieldIds, estimate, storyPoints, labels, dueDate, component, fixVersion } = props
   const isEpic = issueType.toLowerCase() === "epic"
   const versions = projectInfo?.versions?.filter((item) => !item.released && !item.archived) ?? []
   const isCreateField = (fieldId: string) => createFieldIds === null || createFieldIds.includes(fieldId)
@@ -46,7 +49,16 @@ export function PopupIssueExtraFields(props: PopupIssueExtraFieldsProps) {
       <Input type="number" min="0" step="0.5" value={storyPoints} onChange={(event) => props.onStoryPoints(event.target.value)} />
     </PopupFieldShell> : null}
     {isCreateField("labels") ? <PopupFieldShell icon={Tags} label={t.labels} tone="details">
-      <Input value={labels} onChange={(event) => props.onLabels(event.target.value)} placeholder="frontend, regression" />
+      <LabelsCombobox
+        projectKey={projectKey}
+        options={labelOptions}
+        value={labels.split(",").map((item) => item.trim()).filter(Boolean)}
+        onValueChange={(nextLabels) => props.onLabels(nextLabels.join(", "))}
+        placeholder={t.labelSearch}
+        emptyLabel={t.labelEmpty}
+        createLabel={(label) => `${t.createLabel}: ${label}`}
+        loadingLabel={t.loadingLabels}
+      />
     </PopupFieldShell> : null}
     {isCreateField("duedate") ? <PopupFieldShell icon={CalendarDays} label={t.dueDate} tone="details">
       <DatePicker

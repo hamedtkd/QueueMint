@@ -48,6 +48,7 @@ export type PopupCopy = {
   estimate: string
   storyPoints: string
   labels: string
+  labelSearch: string; labelEmpty: string; loadingLabels: string; createLabel: string
   component: string
   fixVersion: string
   dueDate: string
@@ -97,7 +98,6 @@ export type PopupCopy = {
   emptyEvidence: string
   emptyEvidenceHint: string
 }
-
 export const POPUP_COPY: Record<AppLocale, PopupCopy> = {
   en: {
     capture: "Capture & report",
@@ -147,6 +147,8 @@ export const POPUP_COPY: Record<AppLocale, PopupCopy> = {
     estimate: "Original estimate",
     storyPoints: "Story points",
     labels: "Labels",
+    labelSearch: "Search or create a label…", labelEmpty: "No matching labels. Type a label and press Enter to create it.",
+    loadingLabels: "Loading Jira labels…", createLabel: "Create label",
     component: "Component",
     fixVersion: "Fix version",
     dueDate: "Due date",
@@ -244,6 +246,8 @@ export const POPUP_COPY: Record<AppLocale, PopupCopy> = {
     estimate: "زمان تخمینی",
     storyPoints: "استوری پوینت",
     labels: "برچسب‌ها",
+    labelSearch: "جستجو یا ساخت برچسب…", labelEmpty: "برچسبی پیدا نشد؛ نام را بنویس و Enter بزن تا ساخته شود.",
+    loadingLabels: "در حال دریافت برچسب‌های Jira…", createLabel: "ساخت برچسب",
     component: "کامپوننت",
     fixVersion: "نسخه انتشار",
     dueDate: "تاریخ سررسید",

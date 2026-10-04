@@ -1,5 +1,21 @@
 # Changelog
 
+## 1.4.0 - Direct Jira Move and Popup Editor Fix
+
+- Fixed the popup Description editor root cause: popup field shells no longer use a native `<label>` around interactive children. Browser label activation could forward a click from text selection to the editor's first toolbar button, making selection alone toggle Bold on and off. Popup fields now use a non-activating grouped container while preserving the existing visual design.
+- Added a direct **Move issue** workflow to Jira issue details. Users can choose a destination project, destination issue type, destination board, and for Scrum boards a target Sprint or Backlog placement without leaving QueueMint.
+- Cross-project moves use Jira Cloud's official asynchronous Bulk Move API and resolve the issue by its stable Jira ID after completion so QueueMint can continue with the new issue key.
+- Same-project board placement uses Jira Software Agile APIs for Sprint, board-specific Scrum Backlog, and Kanban board placement. Because Jira boards are filter-based, QueueMint treats board selection as placement rather than pretending an issue has exclusive board ownership.
+- Jira Data Center/Server keeps the Jira-native Move fallback for cross-project moves, and Jira Cloud move failures also leave that fallback available.
+- Added regression coverage for the popup selection/Bold bug and the direct project/board move wiring.
+
+## 1.3.4 - Popup Jira Parity and Rich Text Selection Fix
+
+- Fixed the extension popup Description toolbar so text selection is preserved before formatting commands run. Toolbar state is now derived from the editor DOM instead of the deprecated global `queryCommandState`, preventing selection/focus changes from making Bold/Italic/List state jump unexpectedly.
+- Preserved the selected text across toolbar clicks and link prompts so formatting applies to the intended range instead of a collapsed or stale caret.
+- Replaced the popup Labels free-text field with the same Jira-backed searchable multi-select used by the main Quick Issue flow. Existing labels are loaded from Jira, remote suggestions are queried while searching, and new labels can still be created inline.
+- Reused Jira label options in popup Smart Assistant metadata and added regression coverage for popup label parity and rich-text selection preservation.
+
 ## 1.3.2 - Jira Create Safety, Calendar and Evidence UX
 
 - Added Jira Data Center create-screen capability checks through REST API v2 create metadata. QueueMint now filters optional fields against the selected project and issue type before creating an issue instead of assuming every discovered Jira field is writable everywhere.

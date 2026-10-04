@@ -1,0 +1,7 @@
+[33m4a77bfa[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m)[m release: QueueMint v1.3.3
+ .github/workflows/release.yml | 55 [32m+++++++++++++++++++++++++++++++++++++[m[31m------[m
+ README.md                     |  6 [32m++[m[31m---[m
+ package-lock.json             |  4 [32m++[m[31m--[m
+ package.json                  |  2 [32m+[m[31m-[m
+ public/manifest.json          |  4 [32m++[m[31m--[m
+ 5 files changed, 56 insertions(+), 15 deletions(-)
