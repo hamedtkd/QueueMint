@@ -1,5 +1,16 @@
 # Changelog
 
+## 1.5.0 - Review Bulk UX and Jira Sorting
+
+- Added safe No change / No batch default behavior to Review batch settings so optional defaults do not unexpectedly overwrite explicit issue values.
+- Fixed Review assignee previews to display the effective Jira assignee from either the issue or batch default, including Jira avatars, display names, inheritance indicators, and explicit Unassigned states.
+- Aligned Review label previews with the effective values that QueueMint sends to Jira.
+- Added an Assign generated issues to me option for AI bulk prompts using the exact authenticated Jira identity instead of asking AI to guess an assignee.
+- Added configurable Jira issue sorting by updated time and numeric Jira issue number in both ascending and descending directions.
+- Applied sorting before pagination and consistently inside board lanes.
+- Added Jira issue-type icons to Manage Jira Bulk Edit while preserving the safe No change option.
+- Added regression coverage for batch defaults, effective assignees, AI prompt assignment, numeric issue sorting, pagination ordering, board ordering, and issue-type visuals.
+
 ## 1.4.2 - Clean Source Release
 
 - Removed four accidental root-level files introduced during the v1.4.0 release preparation.

@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react"
 import { toast } from "sonner"
 import type { SavedIssueView } from "@/lib/storage"
 import { filterManageIssues, groupLiveIssues, type ManageIssueFilterState } from "./manage-utils"
+import { sortManageIssues, type ManageSort } from "./manage-sorting"
 import type { ManageJiraScreenProps, ManageView } from "./manage-types"
 
 type PendingManageMutation =
@@ -20,6 +21,7 @@ export function useManageJiraModel(props: ManageJiraScreenProps) {
   const [moveTarget, setMoveTarget] = useState("")
   const [pendingMutation, setPendingMutation] = useState<PendingManageMutation | null>(null)
   const [view, setView] = useState<ManageView>("board")
+  const [sort, setSort] = useState<ManageSort>("updated-desc")
   const [filtersOpen, setFiltersOpen] = useState(false)
   const [saveViewOpen, setSaveViewOpen] = useState(false)
   const [saveViewName, setSaveViewName] = useState("")
@@ -60,12 +62,14 @@ export function useManageJiraModel(props: ManageJiraScreenProps) {
   }), [search, typeFilter, priorityFilter, statusFilter, assigneeFilter, sprintFilter, labelFilter, estimateFilter, myIssuesOnly, currentUser])
   const createdFilteredIssues = useMemo(() => filterManageIssues(createdIssues, filterState), [createdIssues, filterState])
   const boardFilteredIssues = useMemo(() => filterManageIssues(issues, filterState), [issues, filterState])
-  const visibleIssues = scope === "created" ? createdFilteredIssues : boardFilteredIssues
+  const createdSortedIssues = useMemo(() => sortManageIssues(createdFilteredIssues, sort), [createdFilteredIssues, sort])
+  const boardSortedIssues = useMemo(() => sortManageIssues(boardFilteredIssues, sort), [boardFilteredIssues, sort])
+  const visibleIssues = scope === "created" ? createdSortedIssues : boardSortedIssues
   const hasActiveFiltering = Boolean(search.trim() || activeFilterCount)
   const createdScopeCount = hasActiveFiltering ? createdFilteredIssues.length : createdIssues.length
   const boardScopeCount = hasActiveFiltering ? boardFilteredIssues.length : issues.length
 
-  useEffect(() => { setPage(1) }, [search, typeFilter, priorityFilter, statusFilter, assigneeFilter, sprintFilter, labelFilter, estimateFilter, myIssuesOnly, scope])
+  useEffect(() => { setPage(1) }, [search, typeFilter, priorityFilter, statusFilter, assigneeFilter, sprintFilter, labelFilter, estimateFilter, myIssuesOnly, scope, sort])
   useEffect(() => { if (scope === "created" && !createdIssues.length) setScope("board") }, [scope, createdIssues.length, setScope])
   useEffect(() => {
     if (!selectedKeys.size) return
@@ -153,7 +157,7 @@ export function useManageJiraModel(props: ManageJiraScreenProps) {
 
   function applySavedView(saved: SavedIssueView) {
     const savedMyIssues = Boolean(saved.filters.myIssuesOnly)
-    setScope(saved.scope); props.setSearch(saved.search); setView(saved.view)
+    setScope(saved.scope); props.setSearch(saved.search); setView(saved.view); setSort(saved.sort ?? "updated-desc")
     setTypeFilter(normalizeMultiFilter(saved.filters.type)); setPriorityFilter(normalizeMultiFilter(saved.filters.priority)); setStatusFilter(normalizeMultiFilter(saved.filters.status))
     setAssigneeFilterState(savedMyIssues ? [] : normalizeMultiFilter(saved.filters.assignee)); setSprintFilter(normalizeMultiFilter(saved.filters.sprint)); setLabelFilter(normalizeMultiFilter(saved.filters.label))
     setEstimateFilter(saved.filters.estimate || "all"); setMyIssuesOnlyState(savedMyIssues); setFiltersOpen(true)
@@ -163,7 +167,7 @@ export function useManageJiraModel(props: ManageJiraScreenProps) {
   function saveCurrentView() {
     const trimmed = saveViewName.trim()
     if (!trimmed) return
-    onSaveView({ name: trimmed, projectKey: project?.key, boardId: selectedBoardId, scope, search, view, filters: { type: typeFilter, priority: priorityFilter, status: statusFilter, assignee: assigneeFilter, sprint: sprintFilter, label: labelFilter, estimate: estimateFilter, myIssuesOnly } })
+    onSaveView({ name: trimmed, projectKey: project?.key, boardId: selectedBoardId, scope, search, view, sort, filters: { type: typeFilter, priority: priorityFilter, status: statusFilter, assignee: assigneeFilter, sprint: sprintFilter, label: labelFilter, estimate: estimateFilter, myIssuesOnly } })
     setSaveViewName(""); setSaveViewOpen(false)
   }
 
@@ -188,5 +192,5 @@ export function useManageJiraModel(props: ManageJiraScreenProps) {
     estimate: [{ value: "all", label: t.allEstimates }, { value: "estimated", label: t.estimated }, { value: "unestimated", label: t.unestimated }],
   }
 
-  return { draggedKey, setDraggedKey, overLane, setOverLane, moveTarget, pendingMutation, setPendingMutation, view, setView, filtersOpen, setFiltersOpen, saveViewOpen, setSaveViewOpen, saveViewName, setSaveViewName, typeFilter, setTypeFilter, priorityFilter, setPriorityFilter, statusFilter, setStatusFilter, assigneeFilter, setAssigneeFilter, sprintFilter, setSprintFilter, labelFilter, setLabelFilter, estimateFilter, setEstimateFilter, myIssuesOnly, setMyIssuesOnly, page, setPage, pageSize, setPageSize, currentUser, matchingSavedViews, createdIssues, activeFilterCount, visibleIssues, hasActiveFiltering, createdScopeCount, boardScopeCount, pageCount, safePage, pageIssues, groups, allPageSelected, allMatchingSelected, moveItems, toggle, requestMoveSelection, requestAssignToMe, confirmPendingMutation, clearFilters, applySavedView, saveCurrentView, selectPage, selectMatching, filterItems }
+  return { draggedKey, setDraggedKey, overLane, setOverLane, moveTarget, pendingMutation, setPendingMutation, view, setView, sort, setSort, filtersOpen, setFiltersOpen, saveViewOpen, setSaveViewOpen, saveViewName, setSaveViewName, typeFilter, setTypeFilter, priorityFilter, setPriorityFilter, statusFilter, setStatusFilter, assigneeFilter, setAssigneeFilter, sprintFilter, setSprintFilter, labelFilter, setLabelFilter, estimateFilter, setEstimateFilter, myIssuesOnly, setMyIssuesOnly, page, setPage, pageSize, setPageSize, currentUser, matchingSavedViews, createdIssues, activeFilterCount, visibleIssues, hasActiveFiltering, createdScopeCount, boardScopeCount, pageCount, safePage, pageIssues, groups, allPageSelected, allMatchingSelected, moveItems, toggle, requestMoveSelection, requestAssignToMe, confirmPendingMutation, clearFilters, applySavedView, saveCurrentView, selectPage, selectMatching, filterItems }
 }

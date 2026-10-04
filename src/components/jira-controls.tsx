@@ -2,6 +2,7 @@ export { PrioritySelect, SprintSelect, SprintVisual } from "@/features/jira-cont
 export {
   BoardSelect,
   buildEpicOptions,
+  BulkIssueTypeSelect,
   BulkEpicCombobox,
   EpicCombobox,
   IssueTypeSelect,

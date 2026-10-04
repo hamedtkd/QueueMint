@@ -39,7 +39,11 @@ export function useDraftActions(options: DraftActionOptions) {
 
   function updateDefaults(patch: Partial<NonNullable<BulkPayload["defaults"]>>) {
     if (!payload) return
-    writePayload({ ...payload, defaults: { ...(payload.defaults ?? {}), ...patch } })
+    const nextDefaults = { ...(payload.defaults ?? {}), ...patch }
+    for (const key of Object.keys(nextDefaults) as Array<keyof typeof nextDefaults>) {
+      if (nextDefaults[key] === undefined) delete nextDefaults[key]
+    }
+    writePayload({ ...payload, defaults: nextDefaults })
   }
 
   function updateIssue(index: number, patch: Partial<BulkIssue>) {

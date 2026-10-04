@@ -114,6 +114,11 @@ export function AppMainShell({ state: s, derived: d, actions: a }: Props) {
                 onDownloadSample={() => downloadJson("jira-bulk-example.json", d.contextualSamplePayload)}
                 onCopyAi={() => void navigator.clipboard.writeText(d.contextualAiPrompt).then(() => { s.setCopiedAiPrompt(true); window.setTimeout(() => s.setCopiedAiPrompt(false), 1600) })}
                 onDownloadAi={() => downloadText("jira-bulk-ai-prompt.txt", d.contextualAiPrompt)} copiedAiPrompt={s.copiedAiPrompt}
+                assignGeneratedToMe={s.assignGeneratedToMe}
+                canAssignGeneratedToMe={Boolean(s.metadata?.user?.name || s.metadata?.user?.key)}
+                currentUserLabel={s.metadata?.user?.displayName || s.metadata?.user?.name || s.metadata?.user?.key}
+                currentUserAvatarUrl={s.metadata?.user?.avatarUrls?.["32x32"] ?? s.metadata?.user?.avatarUrls?.["24x24"] ?? s.metadata?.user?.avatarUrls?.["48x48"]}
+                onAssignGeneratedToMe={s.setAssignGeneratedToMe}
                 onBatchSettings={() => s.setBatchSettingsOpen(true)}
                 onReset={() => { s.setJsonText(JSON.stringify(d.contextualSamplePayload, null, 2)); s.setValidation(EMPTY_VALIDATION); s.setSelectedForCreate(new Set(d.contextualSamplePayload.issues.map((_, index) => index))) }}
                 onReview={() => { if (payload?.issues?.length) { s.setSelectedForCreate(new Set(payload.issues.map((_, index) => index))); s.setMode("review") } }}
@@ -123,7 +128,7 @@ export function AppMainShell({ state: s, derived: d, actions: a }: Props) {
                 t={t} payload={payload} issues={d.issues} visibleEntries={d.visibleIssueEntries} selectedIndex={s.selectedIndex} setSelectedIndex={s.setSelectedIndex}
                 selectedForCreate={s.selectedForCreate} toggleSelectedForCreate={a.draft.toggleSelectedForCreate} setSelectedForCreate={s.setSelectedForCreate}
                 search={s.search} setSearch={s.setSearch} typeFilter={s.typeFilter} setTypeFilter={s.setTypeFilter} placementFilter={s.placementFilter} setPlacementFilter={s.setPlacementFilter}
-                issueTypes={d.issueTypes} sprints={s.sprints} priorities={s.metadata?.priorities ?? []} reviewLayout={s.reviewLayout} setReviewLayout={s.setReviewLayout}
+                issueTypes={d.issueTypes} sprints={s.sprints} priorities={s.metadata?.priorities ?? []} users={s.assignableUsers} reviewLayout={s.reviewLayout} setReviewLayout={s.setReviewLayout}
                 onEdit={(index) => { s.setSelectedIndex(index); s.setInspectorOpen(true) }} onDuplicate={a.draft.duplicateIssue} onDelete={a.draft.deleteIssue}
                 onBatchSettings={() => s.setBatchSettingsOpen(true)} onJson={() => s.setJsonSheetOpen(true)} onSendBacklog={a.draft.sendSelectedToBacklog}
                 onMoveSelected={a.draft.moveSelectedToPlacement} onMoveIssue={a.draft.moveDraftIssue} contextPlacement={d.contextPlacement}

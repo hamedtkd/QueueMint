@@ -1,5 +1,5 @@
 import { useMemo } from "react"
-import { Layers3, Plus, Zap } from "lucide-react"
+import { Layers3, Minus, Plus, Zap } from "lucide-react"
 
 import { JiraIssueTypeVisual } from "@/components/jira-issue-type-visual"
 import { Badge } from "@/components/ui/badge"
@@ -21,6 +21,23 @@ export function IssueTypeSelect({ issueTypes, value, onValueChange, placeholder 
   return <Select value={value || undefined} onValueChange={onValueChange} disabled={disabled}>
     <SelectTrigger className={className} aria-label={placeholder}>{selected ? <JiraIssueTypeVisual name={selected.name} iconUrl={selected.iconUrl} compact /> : <span className="text-muted-foreground">{placeholder}</span>}</SelectTrigger>
     <SelectContent>{issueTypes.map((item) => <SelectItem key={item.id} value={item.name}><JiraIssueTypeVisual name={item.name} iconUrl={item.iconUrl} compact /></SelectItem>)}</SelectContent>
+  </Select>
+}
+
+
+export function BulkIssueTypeSelect({ issueTypes, value, onValueChange, noChangeLabel = "No change", disabled, className }: {
+  issueTypes: Array<{ id: string; name: string; iconUrl?: string }>; value?: string; onValueChange: (value: string | undefined) => void; noChangeLabel?: string; disabled?: boolean; className?: string
+}) {
+  const noChange = "__bulk_issue_type_no_change__"
+  const selected = issueTypes.find((item) => item.name === value)
+  const encoded = value ?? noChange
+  const neutral = <span className="inline-flex min-w-0 items-center gap-2 text-muted-foreground"><span className="grid size-6 shrink-0 place-items-center rounded-[var(--qm-control-radius)] bg-muted"><Minus className="size-3.5" /></span><span className="truncate font-medium">{noChangeLabel}</span></span>
+  return <Select value={encoded} onValueChange={(next) => onValueChange(next === noChange ? undefined : next)} disabled={disabled}>
+    <SelectTrigger className={className} aria-label="Issue type">{selected ? <JiraIssueTypeVisual name={selected.name} iconUrl={selected.iconUrl} compact /> : neutral}</SelectTrigger>
+    <SelectContent>
+      <SelectItem value={noChange}>{neutral}</SelectItem>
+      {issueTypes.map((item) => <SelectItem key={item.id} value={item.name}><JiraIssueTypeVisual name={item.name} iconUrl={item.iconUrl} compact /></SelectItem>)}
+    </SelectContent>
   </Select>
 }
 

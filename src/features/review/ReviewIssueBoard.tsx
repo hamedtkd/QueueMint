@@ -1,12 +1,14 @@
 import { useState, type MouseEvent } from "react"
 import { Check, CircleDot, Clock3, Copy, GripVertical, Inbox, Leaf, Pencil, TimerReset, Trash2, UserRound } from "lucide-react"
+import { JiraUserAvatar } from "@/components/jira-user-avatar"
 import { SprintVisual } from "@/components/jira-controls"
 import { priorityTone } from "@/components/priority"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { copy } from "@/features/app-shell/app-copy"
 import { cn } from "@/lib/utils"
-import type { BulkIssue, BulkPayload, JiraPriority, JiraSprint, ReviewLayout } from "@/types"
+import type { BulkIssue, BulkPayload, JiraPriority, JiraSprint, JiraUser, ReviewLayout } from "@/types"
+import { assigneePresentation, effectiveEstimate, effectiveLabels, effectivePriority, effectiveSprint } from "./review-effective"
 
 export function IssueSelectionToggle({ selected, onToggle, label, className }: { selected: boolean; onToggle: () => void; label: string; className?: string }) {
   return (
@@ -43,13 +45,14 @@ export function groupIssues(entries: Array<{ issue: BulkIssue; index: number }>,
   return Array.from(groups.values())
 }
 
-export function BoardLayout({ groups, payload, selectedIndex, selectedForCreate, priorities, sprints, t, onSelect, onToggle, onEdit, onDuplicate, onDelete, onMoveIssue }: {
+export function BoardLayout({ groups, payload, selectedIndex, selectedForCreate, priorities, sprints, users, t, onSelect, onToggle, onEdit, onDuplicate, onDelete, onMoveIssue }: {
   groups: ReturnType<typeof groupIssues>
   payload?: BulkPayload
   selectedIndex: number
   selectedForCreate: Set<number>
   priorities: JiraPriority[]
   sprints: JiraSprint[]
+  users: JiraUser[]
   t: typeof copy.en | typeof copy.fa
   onSelect: (index: number) => void
   onToggle: (index: number) => void
@@ -95,6 +98,7 @@ export function BoardLayout({ groups, payload, selectedIndex, selectedForCreate,
                   checked={selectedForCreate.has(index)}
                   priorities={priorities}
                   sprints={sprints}
+                  users={users}
                   layout="board"
                   t={t}
                   draggable={issue.type.toLowerCase() !== "epic"}
@@ -115,7 +119,7 @@ export function BoardLayout({ groups, payload, selectedIndex, selectedForCreate,
   )
 }
 
-export function IssueCard({ issue, index, payload, selected, checked, sprints, layout, t, draggable = false, onDragStart, onDragEnd, onSelect, onToggle, onEdit, onDuplicate, onDelete }: {
+export function IssueCard({ issue, index, payload, selected, checked, sprints, users, layout, t, draggable = false, onDragStart, onDragEnd, onSelect, onToggle, onEdit, onDuplicate, onDelete }: {
   issue: BulkIssue
   index: number
   payload?: BulkPayload
@@ -123,6 +127,7 @@ export function IssueCard({ issue, index, payload, selected, checked, sprints, l
   checked: boolean
   priorities: JiraPriority[]
   sprints: JiraSprint[]
+  users: JiraUser[]
   layout: ReviewLayout
   t: typeof copy.en | typeof copy.fa
   draggable?: boolean
@@ -134,13 +139,15 @@ export function IssueCard({ issue, index, payload, selected, checked, sprints, l
   onDuplicate: () => void
   onDelete: () => void
 }) {
-  const effectivePriority = issue.priority ?? payload?.defaults?.priority
-  const effectiveEstimate = issue.estimate ?? payload?.defaults?.estimate
-  const effectiveSprint = issue.sprint !== undefined ? issue.sprint : payload?.defaults?.sprint
-  const sprint = typeof effectiveSprint === "number" ? sprints.find((item) => item.id === effectiveSprint) : undefined
+  const priority = effectivePriority(issue, payload)
+  const estimate = effectiveEstimate(issue, payload)
+  const sprintId = effectiveSprint(issue, payload)
+  const sprint = typeof sprintId === "number" ? sprints.find((item) => item.id === sprintId) : undefined
+  const assignee = assigneePresentation(issue, payload, users)
+  const labels = effectiveLabels(issue, payload)
   const isEpic = issue.type.toLowerCase() === "epic"
   const listMode = layout === "list"
-  const tone = priorityTone(effectivePriority)
+  const tone = priorityTone(priority)
   const ToneIcon = tone.icon
   const worklogMinutes = issue.worklog?.minutes
   const worklogLabel = worklogMinutes
@@ -177,19 +184,19 @@ export function IssueCard({ issue, index, payload, selected, checked, sprints, l
         </div>
         <div className={cn("font-semibold leading-5", listMode ? "truncate text-sm" : "min-h-5 text-[15px]")}>{issue.summary || "—"}</div>
         <div className="mt-2 flex flex-wrap items-center gap-1.5 text-xs">
-          <span className={cn("inline-flex items-center gap-1 rounded-[var(--qm-control-radius)] px-2 py-1", tone.className, "bg-current/10")}><ToneIcon className="size-3.5" />{effectivePriority ?? "—"}</span>
+          <span className={cn("inline-flex items-center gap-1 rounded-[var(--qm-control-radius)] px-2 py-1", tone.className, "bg-current/10")}><ToneIcon className="size-3.5" />{priority ?? "—"}</span>
           {!isEpic ? (
             sprint ? <span className="inline-flex items-center gap-1 rounded-[var(--qm-control-radius)] bg-success/10 px-2 py-1 text-success"><CircleDot className="size-3" />{sprint.name}</span>
               : <span className="inline-flex items-center gap-1 rounded-[var(--qm-control-radius)] bg-muted px-2 py-1 text-muted-foreground"><Inbox className="size-3" />{t.backlog}</span>
           ) : null}
-          {issue.assignee ? <span className="inline-flex items-center gap-1 rounded-[var(--qm-control-radius)] bg-muted px-2 py-1 text-muted-foreground"><UserRound className="size-3" />{issue.assignee}</span> : null}
-          {!isEpic && effectiveEstimate ? <span className="inline-flex items-center gap-1 rounded-[var(--qm-control-radius)] border bg-background/70 px-2 py-1 font-mono text-muted-foreground"><Clock3 className="size-3" />{effectiveEstimate}</span> : null}
+          {assignee.identity ? <span title={assignee.inherited ? t.inherited : undefined} className="inline-flex max-w-full items-center gap-1.5 rounded-[var(--qm-control-radius)] bg-muted px-2 py-1 text-muted-foreground"><JiraUserAvatar name={assignee.label} avatarUrl={assignee.avatarUrl} className="size-4" /><span className="truncate">{assignee.label}</span>{assignee.inherited ? <span className="text-[10px] text-primary">↳</span> : null}</span> : <span className="inline-flex items-center gap-1 rounded-[var(--qm-control-radius)] bg-muted px-2 py-1 text-muted-foreground"><UserRound className="size-3" />{t.unassigned}</span>}
+          {!isEpic && estimate ? <span className="inline-flex items-center gap-1 rounded-[var(--qm-control-radius)] border bg-background/70 px-2 py-1 font-mono text-muted-foreground"><Clock3 className="size-3" />{estimate}</span> : null}
           {worklogLabel ? <span className="inline-flex items-center gap-1 rounded-[var(--qm-control-radius)] border border-primary/25 bg-primary/8 px-2 py-1 font-mono text-primary"><TimerReset className="size-3" />{worklogLabel}</span> : null}
         </div>
-        {issue.labels?.length ? (
+        {labels.length ? (
           <div className="mt-2 flex min-w-0 flex-wrap gap-1">
-            {issue.labels.slice(0, 3).map((label) => <Badge key={label} variant="secondary" className="max-w-28 truncate px-1.5 py-0 text-[10px]">{label}</Badge>)}
-            {issue.labels.length > 3 ? <Badge variant="secondary" className="px-1.5 py-0 text-[10px]">+{issue.labels.length - 3}</Badge> : null}
+            {labels.slice(0, 3).map((label) => <Badge key={label} variant="secondary" className="max-w-28 truncate px-1.5 py-0 text-[10px]">{label}</Badge>)}
+            {labels.length > 3 ? <Badge variant="secondary" className="px-1.5 py-0 text-[10px]">+{labels.length - 3}</Badge> : null}
           </div>
         ) : null}
       </div>

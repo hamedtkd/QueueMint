@@ -22,7 +22,7 @@ import { useProductivityState } from "@/features/productivity/useProductivitySta
 import { findPotentialDuplicates, suggestAssignees } from "@/lib/intelligence"
 import { parseBulkJson } from "@/lib/validation"
 import { jiraBrowseUrl } from "@/lib/jira"
-import { AI_PROMPT_TEMPLATE, SAMPLE_PAYLOAD } from "@/sample"
+import { buildAiPrompt, SAMPLE_PAYLOAD } from "@/sample"
 import type { BulkPayload, JiraIssueSearchResult } from "@/types"
 
 function App() {
@@ -38,7 +38,7 @@ function App() {
     mode, setMode, locale, setLocale, theme, setTheme, accentColor, setAccentColor, reviewLayout, setReviewLayout,
     gridColumns, setGridColumns, density, setDensity, radius, setRadius, neutralTone, setNeutralTone, bodyFont, setBodyFont, headingFont, setHeadingFont,
     sidebarStyle, setSidebarStyle, sidebarAccent, setSidebarAccent, surfaceStyle, setSurfaceStyle, setSettingsOpen, setBatchSettingsOpen, setJsonSheetOpen, setInspectorOpen,
-    setAutoSprintNote, attachmentsByIndex, setAttachmentsByIndex, quickIssue, setQuickIssue, quickPlacement, setQuickPlacement,
+    setAutoSprintNote, assignGeneratedToMe, attachmentsByIndex, setAttachmentsByIndex, quickIssue, setQuickIssue, quickPlacement, setQuickPlacement,
     quickSprintId, setQuickSprintId, quickAttachments, setQuickAttachments, setQuickCreating, setQuickResult,
     liveIssues, setLiveIssues, liveSelectedKeys, setLiveSelectedKeys, worklogSelectedKeys, setWorklogSelectedKeys, lastCreatedKeys, setLastCreatedKeys, setLiveScope,
     setLoadingLive, setLiveActionMessage, liveBulkOpen, setLiveBulkOpen, liveBulkPriority, setLiveBulkPriority,
@@ -164,7 +164,7 @@ function App() {
   const worklogFailureCount = runResult?.results.filter((item) => Boolean(item.worklogError)).length ?? 0
   const progressValue = progress.total ? (progress.done / progress.total) * 100 : 0
   const effectiveDefaultSprint = typeof payload?.defaults?.sprint === "number" ? sprints.find((item) => item.id === payload.defaults?.sprint) : undefined
-  const contextPlacement = typeof payload?.defaults?.sprint === "number" ? effectiveDefaultSprint?.name ?? `Sprint ${payload.defaults.sprint}` : t.backlog
+  const contextPlacement = payload?.defaults?.sprint === undefined ? t.noBatchDefault : typeof payload.defaults.sprint === "number" ? effectiveDefaultSprint?.name ?? `Sprint ${payload.defaults.sprint}` : t.backlog
   const creationIndices = validationActions.includedIndicesForCreation()
   const creationCount = creationIndices.length
   const creationWorklogs = creationIndices.flatMap((index) => {
@@ -181,7 +181,8 @@ function App() {
       estimate: metadata?.estimation.timeTracking ? (payload?.defaults?.estimate ?? SAMPLE_PAYLOAD.defaults?.estimate) : undefined,
     },
   }
-  const contextualAiPrompt = AI_PROMPT_TEMPLATE.replaceAll("PROJECT_KEY", contextualSamplePayload.project)
+  const currentJiraIdentity = metadata?.user?.name || metadata?.user?.key
+  const contextualAiPrompt = buildAiPrompt(contextualSamplePayload.project, assignGeneratedToMe ? currentJiraIdentity : undefined)
   const sprintShareSummary = buildSprintShareSummary(locale, payload?.project, sprints, liveIssues)
   const commandItems = useAppCommandItems({
     t, locale, issueCount, liveSelectedKeys, liveIssues, currentUserIdentity: metadata?.user?.name || metadata?.user?.key,
