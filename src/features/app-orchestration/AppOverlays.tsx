@@ -27,7 +27,8 @@ export function AppOverlays({ state: s, derived: d, actions: a }: Props) {
       <IssueDetailSheet
         open={s.issueDetailOpen} onOpenChange={s.setIssueDetailOpen} locale={s.locale} details={s.issueDetails}
         issueKey={s.issueDetailKey} loading={s.issueDetailLoading} error={s.issueDetailError} projects={s.metadata?.projects ?? []}
-        currentProjectKey={payload?.project} onRefresh={() => void a.live.loadLiveBoard()}
+        currentProjectKey={payload?.project} currentBoardId={s.selectedBoardId} deploymentType={s.metadata?.server?.deploymentType}
+        onRefresh={() => void a.live.loadLiveBoard()}
       />
 
       <IssueInspectorSheet

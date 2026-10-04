@@ -6,7 +6,7 @@ import { formatDiagnosticsText } from "@/features/capture-pro/diagnostics"
 import type { CaptureEvidenceShot, QueueMintPageDiagnostics } from "@/features/capture-pro/types"
 import { captureContextText, screenshotFilename, type QueueMintPageContext } from "@/lib/capture"
 import { localAttachmentsToJira } from "@/lib/file-upload"
-import { createIssues, discoverJira, getAssignableUsers, getBoardsForProject, getCreateFieldsForIssueType, getProject, getProjectEpics, getSprintsForBoard, jiraErrorMessage, uploadIssueAttachments } from "@/lib/jira"
+import { createIssues, discoverJira, getAssignableUsers, getBoardsForProject, getCreateFieldsForIssueType, getProject, getProjectEpics, getProjectLabels, getSprintsForBoard, jiraErrorMessage, uploadIssueAttachments } from "@/lib/jira"
 import { loadState } from "@/lib/storage"
 import type { QueueMintCaptureIssueDraft } from "@/lib/capture-draft"
 import type { JiraAttachmentUpload, JiraBoard, JiraConnectionStatus, JiraEpic, JiraMetadata, JiraProject, JiraSprint, JiraUser } from "@/types"
@@ -26,6 +26,7 @@ export function usePopupJiraForm({ status, t }: { status: JiraConnectionStatus; 
   const [assignees, setAssignees] = useState<JiraUser[]>([])
   const [assignee, setAssignee] = useState("")
   const [epics, setEpics] = useState<JiraEpic[]>([])
+  const [projectLabels, setProjectLabels] = useState<string[]>([])
   const [epic, setEpic] = useState("")
   const [estimate, setEstimate] = useState("")
   const [storyPoints, setStoryPoints] = useState("")
@@ -62,21 +63,24 @@ export function usePopupJiraForm({ status, t }: { status: JiraConnectionStatus; 
   }
 
   async function loadProjectOptionSets(nextProject: string) {
-    const [boardsResult, assigneesResult, epicsResult] = await Promise.allSettled([
+    const [boardsResult, assigneesResult, epicsResult, labelsResult] = await Promise.allSettled([
       getBoardsForProject(nextProject),
       getAssignableUsers(nextProject, "", 100),
       getProjectEpics(nextProject, 100),
+      getProjectLabels(nextProject),
     ])
     const projectBoards = boardsResult.status === "fulfilled" ? boardsResult.value : [] as JiraBoard[]
     const projectAssignees = assigneesResult.status === "fulfilled" ? assigneesResult.value : [] as JiraUser[]
     const projectEpics = epicsResult.status === "fulfilled" ? epicsResult.value : [] as JiraEpic[]
+    const projectLabels = labelsResult.status === "fulfilled" ? labelsResult.value : [] as string[]
     const failures = [
       boardsResult.status === "rejected" ? `${t.board}: ${jiraErrorMessage(boardsResult.reason, t.issueFailed)}` : "",
       assigneesResult.status === "rejected" ? `${t.assignee}: ${jiraErrorMessage(assigneesResult.reason, t.issueFailed)}` : "",
       epicsResult.status === "rejected" ? `${t.epic}: ${jiraErrorMessage(epicsResult.reason, t.issueFailed)}` : "",
+      labelsResult.status === "rejected" ? `${t.labels}: ${jiraErrorMessage(labelsResult.reason, t.issueFailed)}` : "",
     ].filter(Boolean)
     if (failures.length) toast.warning(t.loadingJira, { description: failures.join(" • ") })
-    return { projectBoards, projectAssignees, projectEpics }
+    return { projectBoards, projectAssignees, projectEpics, projectLabels }
   }
 
   async function loadBoardSprints(nextBoardId: number) {
@@ -88,8 +92,8 @@ export function usePopupJiraForm({ status, t }: { status: JiraConnectionStatus; 
   }
 
   async function loadProjectOptions(nextProject: string, project: JiraProject) {
-    const { projectBoards, projectAssignees, projectEpics } = await loadProjectOptionSets(nextProject)
-    setBoards(projectBoards); setAssignees(projectAssignees); setEpics(projectEpics)
+    const { projectBoards, projectAssignees, projectEpics, projectLabels: nextProjectLabels } = await loadProjectOptionSets(nextProject)
+    setBoards(projectBoards); setAssignees(projectAssignees); setEpics(projectEpics); setProjectLabels(nextProjectLabels)
     const contextualBoardId = status.context?.projectKey === nextProject ? status.context?.boardId : undefined
     const selectedBoard = projectBoards.find((item) => item.id === contextualBoardId) ?? projectBoards[0] ?? null
     setBoardId(selectedBoard?.id ?? null); setSprintId(null)
@@ -135,8 +139,8 @@ export function usePopupJiraForm({ status, t }: { status: JiraConnectionStatus; 
       setProjectKey(preferred)
       const project = await getProject(preferred)
       setProjectInfo(project)
-      const { projectBoards, projectAssignees, projectEpics } = await loadProjectOptionSets(preferred)
-      setBoards(projectBoards); setAssignees(projectAssignees); setEpics(projectEpics)
+      const { projectBoards, projectAssignees, projectEpics, projectLabels: nextProjectLabels } = await loadProjectOptionSets(preferred)
+      setBoards(projectBoards); setAssignees(projectAssignees); setEpics(projectEpics); setProjectLabels(nextProjectLabels)
       const selectedBoard = projectBoards.find((item) => item.id === draft.boardId) ?? projectBoards[0] ?? null
       setBoardId(selectedBoard?.id ?? null)
       const boardSprints = selectedBoard ? await loadBoardSprints(selectedBoard.id) : []
@@ -154,7 +158,7 @@ export function usePopupJiraForm({ status, t }: { status: JiraConnectionStatus; 
   }
 
   async function changeProject(nextProject: string) {
-    setProjectKey(nextProject); setProjectInfo(null); setLoadingMetadata(true); setBoardId(null); setSprintId(null); setBoards([]); setSprints([]); setCreateFieldIds(null)
+    setProjectKey(nextProject); setProjectInfo(null); setLoadingMetadata(true); setBoardId(null); setSprintId(null); setBoards([]); setSprints([]); setProjectLabels([]); setCreateFieldIds(null)
     try {
       const project = await getProject(nextProject)
       setProjectInfo(project)
@@ -226,5 +230,5 @@ export function usePopupJiraForm({ status, t }: { status: JiraConnectionStatus; 
     setSummary(""); setDescription(""); setPriority(""); setAssignee(""); setEpic(""); setSprintId(null); setEstimate(""); setStoryPoints(""); setLabels(""); setComponent(""); setFixVersion(""); setDueDate(""); setMoreFields(false); setAttachments([]); setIncludeDiagnostics(false)
   }
 
-  return { metadata, projectInfo, loadingMetadata, projectKey, issueType, issueTypes, priority, boards, boardId, sprints, sprintId, assignees, assignee, epics, epic, estimate, storyPoints, labels, component, fixVersion, dueDate, moreFields, createFieldIds, summary, description, includeContext, includeScreenshot, includeDiagnostics, attachments, creating, issueDraft, setSummary, setDescription, setPriority, setAssignee, setEpic, setSprintId, setEstimate, setStoryPoints, setLabels, setComponent, setFixVersion, setDueDate, setMoreFields, setIncludeContext, setIncludeScreenshot, setIncludeDiagnostics, setAttachments, ensureMetadata, restoreIssueDraft, changeProject, changeBoard, changeIssueType, createIssue, resetFields }
+  return { metadata, projectInfo, loadingMetadata, projectKey, issueType, issueTypes, priority, boards, boardId, sprints, sprintId, assignees, assignee, epics, projectLabels, epic, estimate, storyPoints, labels, component, fixVersion, dueDate, moreFields, createFieldIds, summary, description, includeContext, includeScreenshot, includeDiagnostics, attachments, creating, issueDraft, setSummary, setDescription, setPriority, setAssignee, setEpic, setSprintId, setEstimate, setStoryPoints, setLabels, setComponent, setFixVersion, setDueDate, setMoreFields, setIncludeContext, setIncludeScreenshot, setIncludeDiagnostics, setAttachments, ensureMetadata, restoreIssueDraft, changeProject, changeBoard, changeIssueType, createIssue, resetFields }
 }

@@ -8,6 +8,7 @@ import { Field, FieldLabel } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
 import { Sheet, SheetBody, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet"
 import { cloneJiraIssue, getProject, jiraBrowseUrl, jiraErrorMessage } from "@/lib/jira"
+import { IssueMovePanel } from "./IssueMovePanel"
 import type { AppLocale, JiraIssueDetails, JiraProject } from "@/types"
 import { toast } from "sonner"
 
@@ -21,6 +22,8 @@ export function IssueDetailSheet({
   error,
   projects,
   currentProjectKey,
+  currentBoardId,
+  deploymentType,
   onRefresh,
 }: {
   open: boolean
@@ -32,9 +35,12 @@ export function IssueDetailSheet({
   error: string | null
   projects: JiraProject[]
   currentProjectKey?: string
+  currentBoardId?: number | null
+  deploymentType?: string
   onRefresh: () => void
 }) {
   const [cloneMode, setCloneMode] = useState(false)
+  const [moveMode, setMoveMode] = useState(false)
   const [cloneProjectKey, setCloneProjectKey] = useState("")
   const [cloneProject, setCloneProject] = useState<JiraProject | null>(null)
   const [cloneIssueType, setCloneIssueType] = useState("")
@@ -46,6 +52,7 @@ export function IssueDetailSheet({
   useEffect(() => {
     if (!open || !details) return
     setCloneMode(false)
+    setMoveMode(false)
     setCloneProjectKey(currentProjectKey || details.key.split("-")[0] || "")
     setCloneIssueType(details.type ?? "Task")
     setCloneSummary(`${locale === "fa" ? "کپی" : "Copy"}: ${details.summary}`)
@@ -197,9 +204,21 @@ export function IssueDetailSheet({
               <div className="rounded-[var(--qm-panel-radius)] border bg-muted/10 p-4">
                 <div className="flex flex-wrap items-center gap-2">
                   <Button variant="outline" onClick={() => window.open(jiraBrowseUrl(details.key), "_blank")}><ExternalLink className="size-4" />{locale === "fa" ? "باز کردن در Jira" : "Open in Jira"}</Button>
-                  <Button variant="outline" onClick={() => setCloneMode((value) => !value)}><Copy className="size-4" />{locale === "fa" ? "کپی تسک" : "Clone issue"}</Button>
-                  <Button variant="outline" onClick={openNativeMove}><ArrowLeftRight className="size-4" />{locale === "fa" ? "انتقال در Jira" : "Move in Jira"}</Button>
+                  <Button variant="outline" onClick={() => { setMoveMode(false); setCloneMode((value) => !value) }}><Copy className="size-4" />{locale === "fa" ? "کپی تسک" : "Clone issue"}</Button>
+                  <Button variant={moveMode ? "secondary" : "outline"} onClick={() => { setCloneMode(false); setMoveMode((value) => !value) }}><ArrowLeftRight className="size-4" />{locale === "fa" ? "انتقال تسک" : "Move issue"}</Button>
                 </div>
+
+                {moveMode ? (
+                  <IssueMovePanel
+                    locale={locale}
+                    details={details}
+                    projects={projects}
+                    currentBoardId={currentBoardId}
+                    deploymentType={deploymentType}
+                    onNativeMove={openNativeMove}
+                    onMoved={() => { setMoveMode(false); onOpenChange(false); onRefresh() }}
+                  />
+                ) : null}
 
                 {cloneMode ? (
                   <div className="mt-4 space-y-3 border-t pt-4">

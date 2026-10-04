@@ -26,15 +26,22 @@ type ToolState = {
 
 const emptyState: ToolState = { bold: false, italic: false, bullet: false, numbered: false, quote: false, code: false, link: false }
 
-function selectionElement(editor: HTMLElement) {
+function rangeInsideEditor(editor: HTMLElement) {
   const selection = document.getSelection()
-  const node = selection?.anchorNode
-  if (!node || !editor.contains(node)) return null
+  if (!selection?.rangeCount) return null
+  const range = selection.getRangeAt(0)
+  return editor.contains(range.startContainer) && editor.contains(range.endContainer) ? range : null
+}
+
+function elementFromRange(editor: HTMLElement, range: Range) {
+  const node = range.startContainer
+  if (node === editor) return editor
   return node instanceof HTMLElement ? node : node.parentElement
 }
 
-function queryState(command: string) {
-  try { return document.queryCommandState(command) } catch { return false }
+function hasAncestor(element: HTMLElement | null, editor: HTMLElement, selector: string) {
+  const match = element?.closest(selector)
+  return Boolean(match && editor.contains(match))
 }
 
 function escapeHtml(value: string) {
@@ -43,23 +50,66 @@ function escapeHtml(value: string) {
 
 export function RichTextEditor({ value, onChange, placeholder, className, minHeight = 170, helpText }: RichTextEditorProps) {
   const ref = useRef<HTMLDivElement>(null)
+  const savedRange = useRef<Range | null>(null)
   const lastEmitted = useRef<string | null>(null)
   const [active, setActive] = useState<ToolState>(emptyState)
+
+  const rememberSelection = useCallback(() => {
+    const editor = ref.current
+    if (!editor) return false
+    const range = rangeInsideEditor(editor)
+    if (!range) return false
+    savedRange.current = range.cloneRange()
+    return true
+  }, [])
 
   const refreshActiveState = useCallback(() => {
     const editor = ref.current
     if (!editor) return
-    const element = selectionElement(editor)
-    if (!element) { setActive(emptyState); return }
+    const range = rangeInsideEditor(editor)
+    if (!range) {
+      setActive(emptyState)
+      return
+    }
+    savedRange.current = range.cloneRange()
+    const element = elementFromRange(editor, range)
     setActive({
-      bold: queryState("bold"),
-      italic: queryState("italic"),
-      bullet: queryState("insertUnorderedList"),
-      numbered: queryState("insertOrderedList"),
-      quote: Boolean(element.closest("blockquote")),
-      code: Boolean(element.closest("code")),
-      link: Boolean(element.closest("a")),
+      bold: hasAncestor(element, editor, "strong, b"),
+      italic: hasAncestor(element, editor, "em, i"),
+      bullet: hasAncestor(element, editor, "ul"),
+      numbered: hasAncestor(element, editor, "ol"),
+      quote: hasAncestor(element, editor, "blockquote"),
+      code: hasAncestor(element, editor, "code"),
+      link: hasAncestor(element, editor, "a"),
     })
+  }, [])
+
+  const restoreSelection = useCallback(() => {
+    const editor = ref.current
+    if (!editor) return false
+
+    // Preserve the live selection before focus moves to a toolbar control.
+    const liveRange = rangeInsideEditor(editor)
+    if (liveRange) savedRange.current = liveRange.cloneRange()
+
+    editor.focus({ preventScroll: true })
+    const range = savedRange.current
+    if (!range) return true
+    if (!editor.contains(range.startContainer) || !editor.contains(range.endContainer)) {
+      savedRange.current = null
+      return true
+    }
+
+    try {
+      const selection = document.getSelection()
+      if (!selection) return false
+      selection.removeAllRanges()
+      selection.addRange(range)
+      return true
+    } catch {
+      savedRange.current = null
+      return false
+    }
   }, [])
 
   useEffect(() => {
@@ -67,6 +117,7 @@ export function RichTextEditor({ value, onChange, placeholder, className, minHei
     if (!editor || value === lastEmitted.current) return
     editor.innerHTML = jiraWikiToHtml(value)
     lastEmitted.current = value
+    savedRange.current = null
   }, [value])
 
   useEffect(() => {
@@ -80,47 +131,60 @@ export function RichTextEditor({ value, onChange, placeholder, className, minHei
     const next = editorHtmlToJiraWiki(editor)
     lastEmitted.current = next
     onChange(next)
-    window.requestAnimationFrame(refreshActiveState)
+    window.requestAnimationFrame(() => {
+      rememberSelection()
+      refreshActiveState()
+    })
   }
 
   function runCommand(command: string, commandValue?: string) {
-    ref.current?.focus()
+    if (!restoreSelection()) return
     document.execCommand(command, false, commandValue)
+    rememberSelection()
     syncFromEditor()
   }
 
   function toggleCode() {
     const editor = ref.current
-    if (!editor) return
-    const current = selectionElement(editor)?.closest("code")
+    if (!editor || !restoreSelection()) return
+    const range = rangeInsideEditor(editor)
+    if (!range) return
+    const current = elementFromRange(editor, range)?.closest("code")
     if (current && editor.contains(current)) {
       current.replaceWith(...Array.from(current.childNodes))
+      rememberSelection()
       syncFromEditor()
       return
     }
 
     const selection = document.getSelection()
     if (!selection?.rangeCount) return
-    const range = selection.getRangeAt(0)
-    if (!editor.contains(range.commonAncestorContainer)) return
     const text = selection.toString() || "code"
     document.execCommand("insertHTML", false, `<code>${escapeHtml(text)}</code>`)
+    rememberSelection()
     syncFromEditor()
   }
 
   function toggleLink() {
     const editor = ref.current
-    if (!editor) return
-    const current = selectionElement(editor)?.closest("a")
+    if (!editor || !restoreSelection()) return
+    const range = rangeInsideEditor(editor)
+    if (!range) return
+    const current = elementFromRange(editor, range)?.closest("a")
     if (current && editor.contains(current)) { runCommand("unlink"); return }
 
     const selection = document.getSelection()
     if (!selection?.rangeCount) return
     const label = selection.toString() || "link"
+    rememberSelection()
     const href = window.prompt("Link URL", "https://")?.trim()
     if (!href || !/^https?:\/\//i.test(href)) return
-    if (selection.isCollapsed) document.execCommand("insertHTML", false, `<a href="${escapeHtml(href)}">${escapeHtml(label)}</a>`)
+    if (!restoreSelection()) return
+    const restoredSelection = document.getSelection()
+    if (!restoredSelection?.rangeCount) return
+    if (restoredSelection.isCollapsed) document.execCommand("insertHTML", false, `<a href="${escapeHtml(href)}">${escapeHtml(label)}</a>`)
     else document.execCommand("createLink", false, href)
+    rememberSelection()
     syncFromEditor()
   }
 
@@ -136,11 +200,14 @@ export function RichTextEditor({ value, onChange, placeholder, className, minHei
 
   function handlePaste(event: ClipboardEvent<HTMLDivElement>) {
     event.preventDefault()
+    if (!restoreSelection()) return
     document.execCommand("insertText", false, event.clipboardData.getData("text/plain"))
+    rememberSelection()
     syncFromEditor()
   }
 
   function handleBlur() {
+    rememberSelection()
     const editor = ref.current
     if (editor && !editorHtmlToJiraWiki(editor)) editor.innerHTML = ""
     window.requestAnimationFrame(refreshActiveState)
@@ -164,7 +231,7 @@ export function RichTextEditor({ value, onChange, placeholder, className, minHei
             key={id}
             variant={active[id] ? "default" : "ghost"}
             size="icon-sm"
-            onMouseDown={(event) => event.preventDefault()}
+            onMouseDown={(event) => { rememberSelection(); event.preventDefault() }}
             onClick={action}
             aria-label={label}
             aria-pressed={active[id]}
@@ -183,9 +250,10 @@ export function RichTextEditor({ value, onChange, placeholder, className, minHei
         aria-multiline="true"
         data-placeholder={placeholder ?? ""}
         onInput={syncFromEditor}
+        onFocus={refreshActiveState}
         onKeyDown={handleKeyDown}
         onKeyUp={refreshActiveState}
-        onMouseUp={refreshActiveState}
+        onMouseUp={() => { rememberSelection(); refreshActiveState() }}
         onPaste={handlePaste}
         onBlur={handleBlur}
         onClick={(event) => { if ((event.target as HTMLElement).closest("a")) event.preventDefault() }}

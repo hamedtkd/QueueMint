@@ -101,3 +101,24 @@ export interface JiraAttachmentUpload {
   type: string
   base64: string
 }
+
+export interface JiraIssueMoveOptions {
+  issueId: string
+  issueKey: string
+  sourceProjectKey: string
+  targetProjectKey: string
+  targetIssueTypeId: string
+  targetBoardId?: number | null
+  targetBoardType?: string
+  targetSprintId?: number | null
+  deploymentType?: string
+}
+
+export interface JiraIssueMoveResult {
+  key: string
+  taskId?: string
+  projectMoved: boolean
+  placementApplied: boolean
+  pending: boolean
+  warning?: string
+}
