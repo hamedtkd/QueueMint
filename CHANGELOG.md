@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.4.1 - Release Source Cleanup
+
+- Removed accidental root-level files introduced during the v1.4.0 release preparation.
+- No functional QueueMint behavior changed from v1.4.0.
+- Reissued the clean source and extension release as v1.4.1.
 ## 1.4.0 - Direct Jira Move and Popup Editor Fix
 
 - Fixed the popup Description editor root cause: popup field shells no longer use a native `<label>` around interactive children. Browser label activation could forward a click from text selection to the editor's first toolbar button, making selection alone toggle Bold on and off. Popup fields now use a non-activating grouped container while preserving the existing visual design.
@@ -411,3 +416,4 @@
 - Added Jira connection, issue creation, profile/board context, theme/font/UI foundations, and initial bulk-edit work.
 
 For older detailed notes, see `docs/HISTORY-v0.22.md`.
+
