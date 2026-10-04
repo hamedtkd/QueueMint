@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.5.1 - Source Cleanup
+
+- Removed the accidental QueueMint-release-v1.5.0-fixed.ps1 helper from the repository source.
+- No QueueMint runtime behavior changed from v1.5.0.
+- Reissued the clean source and extension package as v1.5.1.
+
 ## 1.5.0 - Review Bulk UX and Jira Sorting
 
 - Added safe No change / No batch default behavior to Review batch settings so optional defaults do not unexpectedly overwrite explicit issue values.

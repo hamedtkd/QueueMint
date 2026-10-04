@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "QueueMint",
-  "version": "1.5.0",
+  "version": "1.5.1",
   "description": "Jira companion for bug capture, evidence, fast issue creation, safe bulk actions, reusable workflows, and shortcuts.",
   "action": {
     "default_title": "Open QueueMint",
@@ -47,7 +47,7 @@
       "description": "Open the QueueMint command palette (fallback shortcut)"
     }
   },
-  "version_name": "1.5.0 Review Bulk UX & Jira Sorting",
+  "version_name": "1.5.1 Source Cleanup",
   "short_name": "QueueMint",
   "homepage_url": "https://github.com/hamedtkd/QueueMint",
   "content_security_policy": {
