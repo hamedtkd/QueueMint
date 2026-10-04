@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState, type KeyboardEvent } from "react"
 import { LoaderCircle, Plus, Tags, UserRound } from "lucide-react"
 
+import { JiraUserAvatar } from "@/components/jira-user-avatar"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import {
@@ -16,8 +17,8 @@ import { getLabelSuggestions } from "@/lib/jira"
 import type { JiraUser } from "@/types"
 import { SearchableSingle } from "./SearchableSingle"
 
-export function LabelsCombobox({ options, value, onValueChange, placeholder, emptyLabel, createLabel, projectKey, loadingLabel = "Loading Jira labels…" }: {
-  options: string[]; value: string[]; onValueChange: (value: string[]) => void; placeholder: string; emptyLabel: string; createLabel: (value: string) => string; projectKey?: string; loadingLabel?: string
+export function LabelsCombobox({ options, value, onValueChange, placeholder, emptyLabel, createLabel, projectKey, loadingLabel = "Loading Jira labels…", disabled = false }: {
+  options: string[]; value: string[]; onValueChange: (value: string[]) => void; placeholder: string; emptyLabel: string; createLabel: (value: string) => string; projectKey?: string; loadingLabel?: string; disabled?: boolean
 }) {
   const [open, setOpen] = useState(false)
   const [query, setQuery] = useState("")
@@ -43,7 +44,7 @@ export function LabelsCombobox({ options, value, onValueChange, placeholder, emp
     setQuery("")
   }
   return <Combobox open={open} onOpenChange={setOpen}>
-    <ComboboxTrigger asChild><Button type="button" variant="outline" className="min-h-10 h-auto w-full min-w-0 justify-between whitespace-normal px-3 py-1.5 font-normal" aria-haspopup="listbox"><span className="flex min-w-0 flex-1 flex-wrap items-center gap-1.5 text-start"><Tags className="size-4 shrink-0 text-muted-foreground" />{value.length ? value.map((label) => <Badge key={label} variant="secondary">{label}</Badge>) : <span className="truncate text-muted-foreground">{placeholder}</span>}</span></Button></ComboboxTrigger>
+    <ComboboxTrigger asChild><Button type="button" variant="outline" disabled={disabled} className="min-h-10 h-auto w-full min-w-0 justify-between whitespace-normal px-3 py-1.5 font-normal" aria-haspopup="listbox"><span className="flex min-w-0 flex-1 flex-wrap items-center gap-1.5 text-start"><Tags className="size-4 shrink-0 text-muted-foreground" />{value.length ? value.map((label) => <Badge key={label} variant="secondary">{label}</Badge>) : <span className="truncate text-muted-foreground">{placeholder}</span>}</span></Button></ComboboxTrigger>
     <ComboboxContent className="min-w-[300px]"><ComboboxSearch value={query} onChange={(event) => setQuery(event.target.value)} onKeyDown={(event: KeyboardEvent<HTMLInputElement>) => { if (event.key === "Enter" && canCreate) { event.preventDefault(); addQueryLabel() } }} placeholder={placeholder} autoFocus />{loading ? <div className="mb-1 flex items-center gap-2 px-2 py-1 text-xs text-muted-foreground"><LoaderCircle className="size-3.5 animate-spin" />{loadingLabel}</div> : null}<ComboboxList>{canCreate ? <ComboboxOption onClick={addQueryLabel}><span className="inline-flex items-center gap-2 font-medium text-primary"><Plus className="size-4" />{createLabel(normalized)}</span></ComboboxOption> : null}{filtered.length ? filtered.map((label) => <ComboboxOption key={label} selected={value.includes(label)} onClick={() => toggle(label)}><span className="inline-flex items-center gap-2"><Tags className="size-3.5 text-muted-foreground" />{label}</span></ComboboxOption>) : !canCreate && !loading ? <ComboboxEmpty>{emptyLabel}</ComboboxEmpty> : null}</ComboboxList></ComboboxContent>
   </Combobox>
 }
@@ -52,8 +53,9 @@ function userIdentity(user: JiraUser) { return user.name || user.key || user.dis
 function userLabel(user: JiraUser) { const id = userIdentity(user); return user.displayName && user.displayName !== id ? `${user.displayName} · ${id}` : user.displayName || id }
 
 function UserOption({ user, fallback, label }: { user?: JiraUser; fallback: string; label: string }) {
-  const initials = (user?.displayName || fallback).split(/\s+/).filter(Boolean).slice(0, 2).map((part) => part[0]?.toUpperCase()).join("")
-  return <div className="flex min-w-0 items-center gap-2">{user?.avatarUrls?.["24x24"] ? <img src={user.avatarUrls["24x24"]} alt="" className="size-7 shrink-0 rounded-full object-cover" /> : <span className="grid size-7 shrink-0 place-items-center rounded-full bg-primary/10 text-[10px] font-semibold text-primary">{initials || "U"}</span>}<span className="min-w-0 flex-1 truncate">{label}</span></div>
+  const name = user?.displayName || fallback
+  const avatarUrl = user?.avatarUrls?.["32x32"] ?? user?.avatarUrls?.["24x24"] ?? user?.avatarUrls?.["48x48"]
+  return <div className="flex min-w-0 items-center gap-2"><JiraUserAvatar name={name} avatarUrl={avatarUrl} className="size-7" /><span className="min-w-0 flex-1 truncate">{label}</span></div>
 }
 
 export function AssigneeCombobox({ users, value, onValueChange, placeholder, emptyLabel, unassignedLabel, allowInherited = false, inheritedLabel = "Use batch default", defaultAssignee }: {

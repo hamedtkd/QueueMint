@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react"
-import { Activity, BookOpen, Bug, CheckSquare2, Clock3, ClipboardCopy, Columns3, Download, Filter, Grid2X2, ListFilter, Search, Shapes, Table2, Upload, UserRound, UserX, UsersRound, X } from "lucide-react"
+import { Activity, ArrowUpDown, BookOpen, Bug, CheckSquare2, Clock3, ClipboardCopy, Columns3, Download, Filter, Grid2X2, ListFilter, Search, Shapes, Table2, Upload, UserRound, UserX, UsersRound, X } from "lucide-react"
 
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input"
 import { cn } from "@/lib/utils"
 import type { AppLocale, JiraBoardColumn, JiraLiveIssue, JiraUser } from "@/types"
 import { EMPTY_WORKLOG_FILTERS, filterWorklogIssues, type WorklogFilters, worklogFilterCount } from "./worklog-filtering"
-import { sortWorklogIssues } from "./worklog-issues"
+import { sortWorklogIssues, type WorklogIssueSort } from "./worklog-issues"
 import { WorklogFilterSelect, type WorklogFilterOption } from "./WorklogFilterSelect"
 import { WorklogIssueBoard } from "./WorklogIssueBoard"
 import { WorklogIssueCards } from "./WorklogIssueCards"
@@ -40,12 +40,13 @@ export function WorklogIssuePicker({ locale, date, issues, selectedKeys, current
   const [filters, setFilters] = useState<WorklogFilters>(EMPTY_WORKLOG_FILTERS)
   const [filtersOpen, setFiltersOpen] = useState(false)
   const [view, setView] = useState<WorklogIssueView>("board")
+  const [sort, setSort] = useState<WorklogIssueSort>("updated-desc")
   const scopedIssues = useMemo(() => issues.filter((issue) => sprintFilter === "all" || (sprintFilter === "backlog" ? issue.placement === "backlog" : issue.sprintId === Number(sprintFilter.slice(7)))), [issues, sprintFilter])
   const statuses = useMemo(() => Array.from(new Set(scopedIssues.map((issue) => issue.status).filter((value): value is string => Boolean(value)))).sort(), [scopedIssues])
   const types = useMemo(() => Array.from(new Set(scopedIssues.map((issue) => issue.type).filter(Boolean))).sort(), [scopedIssues])
   const assignees = useMemo(() => Array.from(new Set(scopedIssues.map((issue) => issue.assignee).filter((value): value is string => Boolean(value)))).sort(), [scopedIssues])
   const avatarByAssignee = useMemo(() => new Map(scopedIssues.flatMap((issue) => issue.assignee ? [[issue.assignee, issue.avatarUrl] as const] : [])), [scopedIssues])
-  const visible = useMemo(() => sortWorklogIssues(filterWorklogIssues(scopedIssues, filters, currentUser, dailyCandidateKeys, loggedMinutesByIssue, date)), [scopedIssues, filters, currentUser, dailyCandidateKeys, loggedMinutesByIssue, date])
+  const visible = useMemo(() => sortWorklogIssues(filterWorklogIssues(scopedIssues, filters, currentUser, dailyCandidateKeys, loggedMinutesByIssue, date), sort), [scopedIssues, filters, currentUser, dailyCandidateKeys, loggedMinutesByIssue, date, sort])
   const selectedIssues = useMemo(() => issues.filter((issue) => selectedKeys.has(issue.key)), [issues, selectedKeys])
   const activeFilters = worklogFilterCount(filters)
   const exportIssues = selectedKeys.size ? selectedIssues : visible
@@ -77,6 +78,12 @@ export function WorklogIssuePicker({ locale, date, issues, selectedKeys, current
     { value: "unlogged-today", label: isFa ? "Worklog ندارد" : "No worklog", icon: Clock3 },
   ]
   const estimateItems: WorklogFilterOption[] = [{ value: "all", label: isFa ? "هر Estimate" : "Any estimate", icon: Clock3 }, { value: "estimated", label: isFa ? "Estimate دارد" : "Has estimate", icon: Clock3 }, { value: "unestimated", label: isFa ? "بدون Estimate" : "No estimate", icon: Clock3 }]
+  const sortItems: WorklogFilterOption[] = [
+    { value: "updated-desc", label: isFa ? "آخرین آپدیت · جدیدتر اول" : "Updated · newest first", icon: ArrowUpDown },
+    { value: "updated-asc", label: isFa ? "آخرین آپدیت · قدیمی‌تر اول" : "Updated · oldest first", icon: ArrowUpDown },
+    { value: "key-asc", label: isFa ? "شماره تسک · کوچک به بزرگ" : "Issue number · low to high", icon: ArrowUpDown },
+    { value: "key-desc", label: isFa ? "شماره تسک · بزرگ به کوچک" : "Issue number · high to low", icon: ArrowUpDown },
+  ]
   const chips = [filters.assignee !== "all" ? itemLabel(assigneeItems, filters.assignee) : "", filters.status !== "all" ? itemLabel(statusItems, filters.status) : "", filters.type !== "all" ? itemLabel(typeItems, filters.type) : "", filters.activity !== "all" ? itemLabel(activityItems, filters.activity) : "", filters.estimate !== "all" ? itemLabel(estimateItems, filters.estimate) : ""].filter(Boolean)
   const views = [{ id: "table" as const, icon: Table2, label: isFa ? "جدول" : "Table" }, { id: "board" as const, icon: Columns3, label: isFa ? "بورد" : "Board" }, { id: "cards" as const, icon: Grid2X2, label: isFa ? "کارت" : "Cards" }]
 
@@ -92,6 +99,7 @@ export function WorklogIssuePicker({ locale, date, issues, selectedKeys, current
       <div className="qm-worklog-issues-toolbar">
         <div className="relative min-w-0 flex-1"><Search className="pointer-events-none absolute start-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" /><Input value={filters.search} onChange={(event) => set("search", event.target.value)} className="h-9 ps-9" placeholder={isFa ? "جستجو با key، summary یا label..." : "Search issues (key, summary, or label...)"} /></div>
         <Button variant="outline" size="sm" className="h-9" onClick={() => setFiltersOpen((value) => !value)} aria-expanded={filtersOpen}><Filter className="size-3.5" />{isFa ? "فیلترها" : "Filters"}{activeFilters ? <Badge className="ms-1 h-4 min-w-4 px-1 text-[9px]">{activeFilters}</Badge> : null}</Button>
+        <WorklogFilterSelect ariaLabel={isFa ? "مرتب‌سازی تسک‌ها" : "Sort issues"} value={sort} items={sortItems} onValueChange={(value) => setSort(value as WorklogIssueSort)} className="h-9 min-w-[210px]" />
         <span className="hidden h-7 w-px bg-border 2xl:block" />
         <Button variant="ghost" size="sm" className="h-9" onClick={() => onCopyForAi(exportIssues)} disabled={!exportIssues.length}><ClipboardCopy className="size-3.5" /><span className="hidden 2xl:inline">{isFa ? "کپی برای AI" : "Copy for AI"}</span></Button>
         <Button variant="ghost" size="icon-sm" className="size-9" onClick={() => onDownloadForAi(exportIssues)} disabled={!exportIssues.length} aria-label={isFa ? "دانلود JSON" : "Download JSON"}><Download className="size-3.5" /></Button>

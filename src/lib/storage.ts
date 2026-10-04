@@ -12,6 +12,7 @@ export interface SavedIssueView {
   scope: "created" | "board"
   search: string
   view: "list" | "board"
+  sort?: "updated-desc" | "updated-asc" | "key-asc" | "key-desc"
   filters: {
     type: string | string[]
     priority: string | string[]

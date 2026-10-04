@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button"
 import { Field, FieldLabel } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
 import { Sheet, SheetBody, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle } from "@/components/ui/sheet"
+import { SelectionCheckbox } from "@/components/ui/selection-checkbox"
 import { Textarea } from "@/components/ui/textarea"
 import { copy } from "@/features/app-shell/app-copy"
 import type { Placement } from "@/features/bulk/bulk-utils"
@@ -157,21 +158,30 @@ export function BatchSettingsSheet({ open, onOpenChange, locale, t, payload, met
   onBoard: (id: number) => void
   onDefaults: (patch: Partial<NonNullable<BulkPayload["defaults"]>>) => void
 }) {
-  const placement: Placement = typeof payload?.defaults?.sprint === "number" ? "sprint" : "backlog"
-  const preferredSprintId = typeof payload?.defaults?.sprint === "number" ? payload.defaults.sprint : sprints.find((sprint) => sprint.state === "active")?.id ?? sprints[0]?.id
+  const defaultSprint = payload?.defaults?.sprint
+  const placement = defaultSprint === undefined ? "keep" : typeof defaultSprint === "number" ? "sprint" : "backlog"
+  const preferredSprintId = typeof defaultSprint === "number" ? defaultSprint : sprints.find((sprint) => sprint.state === "active")?.id ?? sprints[0]?.id
+  const labelsEnabled = payload?.defaults?.labels !== undefined
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent side={locale === "fa" ? "left" : "right"}>
-        <SheetHeader><SheetTitle>{t.batchSettings}</SheetTitle><SheetDescription>{t.context}</SheetDescription></SheetHeader>
+        <SheetHeader><SheetTitle>{t.batchSettings}</SheetTitle><SheetDescription>{t.batchDefaultsHint}</SheetDescription></SheetHeader>
         <SheetBody className="space-y-5">
           <Field><FieldLabel>{t.project}</FieldLabel><ProjectCombobox projects={metadata?.projects ?? []} value={payload?.project} onValueChange={onProject} placeholder={t.projectSearch} emptyLabel={t.projectEmpty} disabled={!payload || !metadata} /></Field>
           <Field><FieldLabel>{t.board}</FieldLabel><BoardSelect boards={boards} value={selectedBoardId} onValueChange={onBoard} disabled={!boards.length || loading} /></Field>
-          <Field><FieldLabel>{t.placement}</FieldLabel><PlacementToggle value={placement} onChange={(next) => onDefaults({ sprint: next === "backlog" ? null : preferredSprintId ?? null })} t={t} /></Field>
-          {placement === "sprint" ? <Field><FieldLabel>{t.defaultSprint}</FieldLabel><SprintSelect sprints={sprints} value={payload?.defaults?.sprint} onValueChange={(sprint) => onDefaults({ sprint })} allowInherited={false} allowBacklog={false} noDefaultLabel={t.noDefault} activeLabel={t.active} futureLabel={t.future} /></Field> : null}
-          <Field><FieldLabel>{t.defaultPriority}</FieldLabel><PrioritySelect priorities={metadata?.priorities ?? []} value={payload?.defaults?.priority} onValueChange={(priority) => onDefaults({ priority })} allowInherited={false} noDefaultLabel={t.noDefault} /></Field>
-          <EstimateInput label={t.defaultEstimate} value={payload?.defaults?.estimate ?? ""} onValueChange={(estimate) => onDefaults({ estimate: estimate.trim() ? estimate : undefined })} placeholder={t.estimatePlaceholder} help={metadata?.estimation.timeTracking ? t.estimateHelp : t.estimateUnavailable} />
-          <Field><FieldLabel>{t.defaultAssignee}</FieldLabel><AssigneeCombobox users={users} value={payload?.defaults?.assignee} onValueChange={(assignee) => onDefaults({ assignee })} placeholder={t.assigneeSearch} emptyLabel={t.assigneeEmpty} unassignedLabel={t.unassigned} /></Field>
-          <Field><FieldLabel>{t.defaultLabels}</FieldLabel><LabelsCombobox projectKey={payload?.project} options={labels} value={payload?.defaults?.labels ?? []} onValueChange={(nextLabels) => onDefaults({ labels: nextLabels })} placeholder={t.labelSearch} emptyLabel={t.labelEmpty} createLabel={(label) => `${t.createLabel}: ${label}`} loadingLabel={t.loadingLabels} /></Field>
+          <Field><FieldLabel>{t.placement}</FieldLabel><SimpleSelect value={placement} onValueChange={(next) => onDefaults({ sprint: next === "keep" ? undefined : next === "backlog" ? null : preferredSprintId })} items={[{ value: "keep", label: t.keepIssueValue }, { value: "sprint", label: t.sprint }, { value: "backlog", label: t.backlog }]} /></Field>
+          {placement === "sprint" ? <Field><FieldLabel>{t.defaultSprint}</FieldLabel><SprintSelect sprints={sprints} value={payload?.defaults?.sprint} onValueChange={(sprint) => onDefaults({ sprint })} allowInherited={false} allowBacklog={false} noDefaultLabel={t.noBatchDefault} activeLabel={t.active} futureLabel={t.future} /></Field> : null}
+          <Field><FieldLabel>{t.defaultPriority}</FieldLabel><PrioritySelect priorities={metadata?.priorities ?? []} value={payload?.defaults?.priority} onValueChange={(priority) => onDefaults({ priority })} allowInherited={false} noDefaultLabel={t.noBatchDefault} /></Field>
+          <EstimateInput label={t.defaultEstimate} value={payload?.defaults?.estimate ?? ""} onValueChange={(estimate) => onDefaults({ estimate: estimate.trim() ? estimate : undefined })} placeholder={t.noBatchDefault} help={metadata?.estimation.timeTracking ? t.estimateHelp : t.estimateUnavailable} inheritedText={!payload?.defaults?.estimate ? t.keepIssueValue : undefined} />
+          <Field><FieldLabel>{t.defaultAssignee}</FieldLabel><AssigneeCombobox users={users} value={payload?.defaults?.assignee} onValueChange={(assignee) => onDefaults({ assignee })} placeholder={t.assigneeSearch} emptyLabel={t.assigneeEmpty} unassignedLabel={t.noBatchDefault} /></Field>
+          <Field>
+            <FieldLabel>{t.defaultLabels}</FieldLabel>
+            <label className="mb-2 flex cursor-pointer items-start gap-2 rounded-[var(--qm-control-radius)] border bg-muted/[0.12] px-3 py-2.5 text-sm">
+              <SelectionCheckbox checked={labelsEnabled} onChange={(checked) => onDefaults({ labels: checked ? [] : undefined })} label={t.useBatchLabels} className="mt-0.5" />
+              <span className="min-w-0"><span className="block font-medium">{t.useBatchLabels}</span><span className="mt-0.5 block text-xs text-muted-foreground">{labelsEnabled ? t.batchLabelsMergeHint : t.keepIssueLabels}</span></span>
+            </label>
+            <LabelsCombobox disabled={!labelsEnabled} projectKey={payload?.project} options={labels} value={payload?.defaults?.labels ?? []} onValueChange={(nextLabels) => onDefaults({ labels: nextLabels })} placeholder={labelsEnabled ? t.labelSearch : t.noBatchDefault} emptyLabel={t.labelEmpty} createLabel={(label) => `${t.createLabel}: ${label}`} loadingLabel={t.loadingLabels} />
+          </Field>
           {autoSprintNote ? <div className="flex items-start gap-2 rounded-[var(--qm-panel-radius)] border border-success/25 bg-success/8 p-3 text-sm text-success"><CheckCircle2 className="mt-0.5 size-4 shrink-0" />{t.autoSprint}</div> : null}
         </SheetBody>
         <SheetFooter className="justify-end"><Button className="min-w-24" onClick={() => onOpenChange(false)}>{t.done}</Button></SheetFooter>

@@ -64,6 +64,7 @@ export function useAppState() {
   const [inspectorOpen, setInspectorOpen] = useState(false)
   const [autoSprintNote, setAutoSprintNote] = useState(false)
   const [copiedAiPrompt, setCopiedAiPrompt] = useState(false)
+  const [assignGeneratedToMe, setAssignGeneratedToMe] = useState(false)
   const [attachmentsByIndex, setAttachmentsByIndex] = useState<Record<number, LocalAttachment[]>>({})
   const [quickIssue, setQuickIssue] = useState<BulkIssue>({ type: "Task", summary: "", description: "" })
   const [quickPlacement, setQuickPlacement] = useState<Placement>("sprint")
@@ -130,7 +131,7 @@ export function useAppState() {
     placementFilter, setPlacementFilter, mode, setMode, locale, setLocale, theme, setTheme, accentColor, setAccentColor, reviewLayout, setReviewLayout,
     gridColumns, setGridColumns, density, setDensity, radius, setRadius, neutralTone, setNeutralTone, bodyFont, setBodyFont, headingFont, setHeadingFont,
     sidebarStyle, setSidebarStyle, sidebarAccent, setSidebarAccent, surfaceStyle, setSurfaceStyle, settingsOpen, setSettingsOpen, batchSettingsOpen, setBatchSettingsOpen, jsonSheetOpen, setJsonSheetOpen,
-    inspectorOpen, setInspectorOpen, autoSprintNote, setAutoSprintNote, copiedAiPrompt, setCopiedAiPrompt, attachmentsByIndex, setAttachmentsByIndex,
+    inspectorOpen, setInspectorOpen, autoSprintNote, setAutoSprintNote, copiedAiPrompt, setCopiedAiPrompt, assignGeneratedToMe, setAssignGeneratedToMe, attachmentsByIndex, setAttachmentsByIndex,
     quickIssue, setQuickIssue, quickPlacement, setQuickPlacement, quickSprintId, setQuickSprintId, quickAttachments, setQuickAttachments, quickCreating, setQuickCreating,
     quickResult, setQuickResult, liveIssues, setLiveIssues, liveSelectedKeys, setLiveSelectedKeys, worklogSelectedKeys, setWorklogSelectedKeys, lastCreatedKeys, setLastCreatedKeys, liveScope, setLiveScope,
     liveSearch, setLiveSearch, loadingLive, setLoadingLive, liveActionMessage, setLiveActionMessage, liveBulkOpen, setLiveBulkOpen, liveBulkPriority, setLiveBulkPriority,

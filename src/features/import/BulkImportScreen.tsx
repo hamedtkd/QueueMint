@@ -1,9 +1,11 @@
 import { useRef } from "react"
-import { CheckCircle2, ChevronRight, Code2, Download, RefreshCw, Settings2, Upload, WandSparkles, XCircle } from "lucide-react"
+import { CheckCircle2, ChevronRight, Code2, Download, RefreshCw, Settings2, Upload, UserRound, WandSparkles, XCircle } from "lucide-react"
 
+import { JiraUserAvatar } from "@/components/jira-user-avatar"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { SelectionCheckbox } from "@/components/ui/selection-checkbox"
 import { copy } from "@/features/app-shell/app-copy"
 import { cn } from "@/lib/utils"
 
@@ -18,6 +20,11 @@ export function BulkImportScreen({
   onCopyAi,
   onDownloadAi,
   copiedAiPrompt,
+  assignGeneratedToMe,
+  canAssignGeneratedToMe,
+  currentUserLabel,
+  currentUserAvatarUrl,
+  onAssignGeneratedToMe,
   onBatchSettings,
   onReset,
   onReview,
@@ -32,6 +39,11 @@ export function BulkImportScreen({
   onCopyAi: () => void
   onDownloadAi: () => void
   copiedAiPrompt: boolean
+  assignGeneratedToMe: boolean
+  canAssignGeneratedToMe: boolean
+  currentUserLabel?: string
+  currentUserAvatarUrl?: string
+  onAssignGeneratedToMe: (checked: boolean) => void
   onBatchSettings: () => void
   onReset: () => void
   onReview: () => void
@@ -44,12 +56,19 @@ export function BulkImportScreen({
         <p className="qm-page-subtitle">{t.bulkHint}</p>
       </div>
 
-      <div className="qm-start-grid mb-5 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+      <div className="qm-start-grid mb-3 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
         <StartCard icon={Upload} title={t.uploadJson} description=".json file" action={onImport} />
         <StartCard icon={Download} title={t.sampleJson} description="Safe schema + example" action={onDownloadSample} />
         <StartCard icon={WandSparkles} title={copiedAiPrompt ? t.copied : t.aiTemplate} description={t.downloadPrompt} action={onCopyAi} secondaryAction={onDownloadAi} />
         <StartCard icon={Settings2} title={t.batchSettings} description={t.context} action={onBatchSettings} />
       </div>
+
+      <label className={cn("mb-5 flex items-center gap-3 rounded-[var(--qm-panel-radius)] border bg-card px-4 py-3", canAssignGeneratedToMe ? "cursor-pointer hover:border-primary/25" : "cursor-not-allowed opacity-70")}>
+        <SelectionCheckbox checked={assignGeneratedToMe} onChange={onAssignGeneratedToMe} disabled={!canAssignGeneratedToMe} label={t.assignGeneratedToMe} />
+        {canAssignGeneratedToMe ? <JiraUserAvatar name={currentUserLabel} avatarUrl={currentUserAvatarUrl} className="size-7" /> : <span className="grid size-7 place-items-center rounded-full bg-muted text-muted-foreground"><UserRound className="size-4" /></span>}
+        <span className="min-w-0 flex-1"><span className="block text-sm font-semibold">{t.assignGeneratedToMe}</span><span className="mt-0.5 block text-xs text-muted-foreground">{canAssignGeneratedToMe ? t.assignGeneratedToMeHint : t.jiraIdentityUnavailable}</span></span>
+        {canAssignGeneratedToMe && currentUserLabel ? <Badge variant="secondary" className="max-w-44 truncate">{currentUserLabel}</Badge> : null}
+      </label>
 
       <Card className="qm-editor-card gap-0 py-0 shadow-none">
         <CardHeader className="border-b px-5 py-4">

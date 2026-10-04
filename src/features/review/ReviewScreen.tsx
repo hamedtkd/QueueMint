@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input"
 import { DEFAULT_FILTER } from "@/features/bulk/bulk-utils"
 import { copy } from "@/features/app-shell/app-copy"
 import { cn } from "@/lib/utils"
-import type { BulkIssue, BulkPayload, JiraBoard, JiraPriority, JiraSprint, ReviewLayout, ValidationResult } from "@/types"
+import type { BulkIssue, BulkPayload, JiraBoard, JiraPriority, JiraSprint, JiraUser, ReviewLayout, ValidationResult } from "@/types"
 import { ContextItem } from "./ReviewContext"
 import { BoardLayout, groupIssues, IssueCard } from "./ReviewIssueBoard"
 import { ReviewIssueTable } from "./ReviewIssueTable"
@@ -32,6 +32,7 @@ export function ReviewScreen({
   issueTypes,
   sprints,
   priorities,
+  users,
   reviewLayout,
   setReviewLayout,
   onEdit,
@@ -66,6 +67,7 @@ export function ReviewScreen({
   issueTypes: Array<{ id: string; name: string }>
   sprints: JiraSprint[]
   priorities: JiraPriority[]
+  users: JiraUser[]
   reviewLayout: ReviewLayout
   setReviewLayout: (layout: ReviewLayout) => void
   onEdit: (index: number) => void
@@ -126,7 +128,7 @@ export function ReviewScreen({
           <div className="qm-context-items flex min-w-0 flex-1 flex-wrap">
             <ContextItem label={t.project} value={payload?.project ?? "—"} icon={Layers3} />
             <ContextItem label={t.board} value={selectedBoard?.name ?? "—"} icon={ListChecks} />
-            <ContextItem label={t.placement} value={contextPlacement} icon={typeof payload?.defaults?.sprint === "number" ? CircleDot : Inbox} tone={typeof payload?.defaults?.sprint === "number" ? "success" : undefined} />
+            <ContextItem label={t.placement} value={contextPlacement} icon={payload?.defaults?.sprint === undefined ? SlidersHorizontal : typeof payload.defaults.sprint === "number" ? CircleDot : Inbox} tone={typeof payload?.defaults?.sprint === "number" ? "success" : undefined} />
             <ContextItem label={t.priority} value={payload?.defaults?.priority ?? t.noDefault} icon={priorityTone(payload?.defaults?.priority).icon} />
             <ContextItem label={t.estimate} value={payload?.defaults?.estimate ?? t.noDefault} icon={Clock3} />
           </div>
@@ -192,6 +194,7 @@ export function ReviewScreen({
               selectedForCreate={selectedForCreate}
               priorities={priorities}
               sprints={sprints}
+              users={users}
               t={t}
               onSelect={setSelectedIndex}
               onToggle={toggleSelectedForCreate}
@@ -207,6 +210,7 @@ export function ReviewScreen({
               selectedIndex={selectedIndex}
               selectedForCreate={selectedForCreate}
               sprints={sprints}
+              users={users}
               allVisibleSelected={allVisibleSelected}
               someVisibleSelected={someVisibleSelected}
               t={t}
@@ -229,6 +233,7 @@ export function ReviewScreen({
                   checked={selectedForCreate.has(index)}
                   priorities={priorities}
                   sprints={sprints}
+                  users={users}
                   layout="grid"
                   t={t}
                   onSelect={() => setSelectedIndex(index)}

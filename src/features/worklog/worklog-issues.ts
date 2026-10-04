@@ -1,6 +1,7 @@
 import type { JiraLiveIssue, JiraUser } from "@/types"
 
 export type WorklogStatusCategory = "new" | "indeterminate" | "done" | "other"
+export type WorklogIssueSort = "updated-desc" | "updated-asc" | "key-asc" | "key-desc"
 
 function identityValues(user?: JiraUser) {
   return [user?.accountId, user?.name, user?.key, user?.displayName, user?.emailAddress]
@@ -63,12 +64,34 @@ export function buildDailyCandidateIssues(issues: JiraLiveIssue[], user?: JiraUs
     .map((item) => item.issue)
 }
 
-export function sortWorklogIssues(issues: JiraLiveIssue[]) {
-  const rank: Record<WorklogStatusCategory, number> = { indeterminate: 0, done: 1, other: 2, new: 3 }
+function keyParts(key: string) {
+  const match = /^(.*?)-(\d+)$/.exec(key.trim())
+  return match ? { prefix: match[1].toUpperCase(), number: Number(match[2]) } : null
+}
+
+function compareKeys(a: JiraLiveIssue, b: JiraLiveIssue) {
+  const left = keyParts(a.key)
+  const right = keyParts(b.key)
+  if (left && right) {
+    const prefix = left.prefix.localeCompare(right.prefix)
+    if (prefix) return prefix
+    const number = left.number - right.number
+    if (number) return number
+  } else if (left || right) return left ? -1 : 1
+  return a.key.localeCompare(b.key, undefined, { numeric: true, sensitivity: "base" })
+}
+
+function updatedMillis(issue: JiraLiveIssue) {
+  const value = issue.updated ? Date.parse(issue.updated) : Number.NaN
+  return Number.isFinite(value) ? value : 0
+}
+
+export function sortWorklogIssues(issues: JiraLiveIssue[], sort: WorklogIssueSort = "updated-desc") {
   return [...issues].sort((a, b) => {
-    const category = rank[worklogStatusCategory(a)] - rank[worklogStatusCategory(b)]
-    if (category) return category
-    const updated = String(b.updated ?? "").localeCompare(String(a.updated ?? ""))
-    return updated || a.key.localeCompare(b.key)
+    if (sort === "key-asc") return compareKeys(a, b)
+    if (sort === "key-desc") return compareKeys(b, a)
+    const updated = updatedMillis(a) - updatedMillis(b)
+    if (updated) return sort === "updated-asc" ? updated : -updated
+    return compareKeys(a, b)
   })
 }

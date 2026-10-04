@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState, type ChangeEvent } from "react"
 import { Bookmark, LoaderCircle, PlusCircle, Save } from "lucide-react"
-import { BulkAssigneeCombobox, BulkEpicCombobox, JiraFieldCombobox, PrioritySelect, SimpleSelect, SprintSelect, buildEpicOptions } from "@/components/jira-controls"
+import { BulkAssigneeCombobox, BulkEpicCombobox, BulkIssueTypeSelect, JiraFieldCombobox, PrioritySelect, SimpleSelect, SprintSelect, buildEpicOptions } from "@/components/jira-controls"
 import { Button } from "@/components/ui/button"
 import { Field, FieldLabel } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
@@ -68,7 +68,7 @@ export function LiveBulkEditSheet({
   priorities: JiraPriority[]
   users: JiraUser[]
   assigneeSuggestions: AssigneeSuggestion[]
-  issueTypes: Array<{ id: string; name: string }>
+  issueTypes: Array<{ id: string; name: string; iconUrl?: string }>
   epicOptions: ReturnType<typeof buildEpicOptions>
   epicLinkFieldId?: string
   sprints: JiraSprint[]
@@ -183,7 +183,7 @@ export function LiveBulkEditSheet({
         <SheetBody className="space-y-5">
           <SavedActionComposer locale={locale} actions={savedActions} onCompose={onComposeAction} />
           {metadataReady ? <div className="rounded-[var(--qm-control-radius)] border border-primary/15 bg-primary/[0.035] px-3 py-2 text-xs leading-5 text-muted-foreground">{t.bulkFieldGuardHint}</div> : null}
-          <Field><FieldLabel>{t.editIssueType}</FieldLabel><SimpleSelect value={issueType ?? "__no_change_type__"} onValueChange={(value) => setIssueType(value === "__no_change_type__" ? undefined : value)} items={[{ value: "__no_change_type__", label: t.noChange }, ...issueTypes.map((item) => ({ value: item.name, label: item.name }))]} disabled={!issueTypes.length || !issueTypeEditable} /></Field>
+          <Field><FieldLabel>{t.editIssueType}</FieldLabel><BulkIssueTypeSelect issueTypes={issueTypes} value={issueType} onValueChange={setIssueType} noChangeLabel={t.noChange} disabled={!issueTypes.length || !issueTypeEditable} /></Field>
           <Field><FieldLabel>{t.editPriority}</FieldLabel><PrioritySelect priorities={priorities} value={priority} onValueChange={setPriority} allowInherited={false} noDefaultLabel={t.noChange} disabled={!priorityEditable} /></Field>
           <Field><FieldLabel>{t.editAssignee}</FieldLabel><BulkAssigneeCombobox users={users} value={assignee} onValueChange={setAssignee} placeholder={t.noChange} emptyLabel={t.assigneeEmpty} unassignedLabel={t.unassign} noChangeLabel={t.noChange} disabled={!assigneeEditable} />{assigneeEditable ? <SmartAssigneeSuggestions locale={locale} suggestions={assigneeSuggestions} onSelect={setAssignee} /> : null}</Field>
           {epicLinkFieldId ? <Field><FieldLabel>{t.editEpicLink}</FieldLabel><BulkEpicCombobox options={epicOptions} value={epicLink} onValueChange={setEpicLink} placeholder={t.epicSearch} emptyLabel={t.epicEmpty} noChangeLabel={t.noChange} clearLabel={t.removeEpicLink} disabled={!epicEditable} /></Field> : null}

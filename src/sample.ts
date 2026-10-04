@@ -123,3 +123,15 @@ Rules:
 My request:
 [DESCRIBE THE WORK HERE]
 `
+
+export function buildAiPrompt(projectKey: string, assignee?: string) {
+  let prompt = AI_PROMPT_TEMPLATE.replaceAll("PROJECT_KEY", projectKey)
+  const identity = assignee?.trim()
+  if (!identity) return prompt
+  prompt = prompt.replace('  "defaults": {\n', `  "defaults": {\n    "assignee": ${JSON.stringify(identity)},\n`)
+  prompt = prompt.replace('      "assignee": "jira-username",\n', "")
+  return prompt.replace(
+    "- assignee is the Jira username/key, or omit it for unassigned/default behavior.",
+    `- assignee is the Jira username/key, or omit it for unassigned/default behavior.\n- Assign every generated issue to the exact Jira identity ${JSON.stringify(identity)} by keeping defaults.assignee set to that value. Do not add a different issue-level assignee. Do not guess or replace this identity.`,
+  )
+}
