@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react"
+import { useMemo, useRef, useState } from "react"
 import { Activity, ArrowUpDown, BookOpen, Bug, CheckSquare2, Clock3, Columns3, Download, Filter, Grid2X2, ListFilter, Search, Shapes, Table2, Upload, UserRound, UserX, UsersRound, X } from "lucide-react"
 
 import { Badge } from "@/components/ui/badge"
@@ -9,6 +9,8 @@ import type { AppLocale, JiraBoardColumn, JiraLiveIssue, JiraUser } from "@/type
 import { EMPTY_WORKLOG_FILTERS, filterWorklogIssues, type WorklogFilters, worklogFilterCount } from "./worklog-filtering"
 import { sortWorklogIssues, type WorklogIssueSort } from "./worklog-issues"
 import { WorklogFilterSelect, type WorklogFilterOption } from "./WorklogFilterSelect"
+import { SimpleSelect } from "@/components/jira-controls"
+import { selectBoardIssue } from "@/features/jira-status/jira-status-selection"
 import { WorklogIssueBoard } from "./WorklogIssueBoard"
 import { WorklogIssueCards } from "./WorklogIssueCards"
 import { WorklogIssueTable } from "./WorklogIssueTable"
@@ -20,7 +22,7 @@ function itemLabel(items: WorklogFilterOption[], value: string) { return items.f
 function userAvatar(user?: JiraUser) { return user?.avatarUrls?.["24x24"] ?? user?.avatarUrls?.["32x32"] ?? user?.avatarUrls?.["48x48"] }
 function typeIcon(type: string) { const value = type.toLowerCase(); return value.includes("bug") ? Bug : value.includes("story") ? BookOpen : value.includes("task") ? CheckSquare2 : Shapes }
 
-export function WorklogIssuePicker({ locale, date, issues, selectedKeys, currentUser, boardId, sprintFilter, dailyCandidateKeys, loggedMinutesByIssue, onSelectedKeysChange, onMoveIssueStatus, onOpenExport, onOpenImport }: {
+export function WorklogIssuePicker({ locale, date, issues, selectedKeys, currentUser, boardId, sprintFilter, dailyCandidateKeys, loggedMinutesByIssue, onSelectedKeysChange, onMoveIssueStatus, onStatusMoveRequest, onOpenExport, onOpenImport }: {
   locale: AppLocale
   date: Date
   issues: JiraLiveIssue[]
@@ -32,11 +34,13 @@ export function WorklogIssuePicker({ locale, date, issues, selectedKeys, current
   loggedMinutesByIssue: Record<string, number>
   onSelectedKeysChange: (keys: Set<string>) => void
   onMoveIssueStatus?: (issueKey: string, target: Pick<JiraBoardColumn, "name" | "statusIds">) => Promise<boolean>
+  onStatusMoveRequest?: (keys: string[], target: Pick<JiraBoardColumn, "name" | "statusIds">) => void
   onOpenExport: (issues: JiraLiveIssue[]) => void
   onOpenImport: () => void
 }) {
   const isFa = locale === "fa"
   const [filters, setFilters] = useState<WorklogFilters>(EMPTY_WORKLOG_FILTERS)
+  const lastSelectedKey = useRef<string | null>(null)
   const [filtersOpen, setFiltersOpen] = useState(false)
   const [view, setView] = useState<WorklogIssueView>("board")
   const [sort, setSort] = useState<WorklogIssueSort>("updated-desc")
@@ -55,7 +59,8 @@ export function WorklogIssuePicker({ locale, date, issues, selectedKeys, current
   const boardColumns = useWorklogBoardColumns(boardId, visible)
 
   function set<K extends keyof WorklogFilters>(key: K, value: WorklogFilters[K]) { setFilters((current) => ({ ...current, [key]: value })) }
-  function toggle(key: string) { const next = new Set(selectedKeys); if (next.has(key)) next.delete(key); else next.add(key); onSelectedKeysChange(next) }
+  function toggle(key: string) { const next = new Set(selectedKeys); if (next.has(key)) next.delete(key); else next.add(key); lastSelectedKey.current = key; onSelectedKeysChange(next) }
+  function selectRange(key: string, order: string[]) { onSelectedKeysChange(selectBoardIssue(order, selectedKeys, key, lastSelectedKey.current, true)); lastSelectedKey.current = key }
   function toggleAllVisible(checked: boolean) { const next = new Set(selectedKeys); for (const issue of visible) { if (checked) next.add(issue.key); else next.delete(issue.key) } onSelectedKeysChange(next) }
   function clearFilters() { setFilters(EMPTY_WORKLOG_FILTERS) }
 
@@ -100,6 +105,7 @@ export function WorklogIssuePicker({ locale, date, issues, selectedKeys, current
         <Button variant="outline" size="sm" className="h-9" onClick={() => setFiltersOpen((value) => !value)} aria-expanded={filtersOpen}><Filter className="size-3.5" />{isFa ? "فیلترها" : "Filters"}{activeFilters ? <Badge className="ms-1 h-4 min-w-4 px-1 text-[9px]">{activeFilters}</Badge> : null}</Button>
         <WorklogFilterSelect ariaLabel={isFa ? "مرتب‌سازی تسک‌ها" : "Sort issues"} value={sort} items={sortItems} onValueChange={(value) => setSort(value as WorklogIssueSort)} className="h-9 min-w-[210px]" />
         <span className="hidden h-7 w-px bg-border 2xl:block" />
+        <SimpleSelect ariaLabel={isFa ? "انتقال انتخاب‌شده‌ها به وضعیت" : "Move selected issues to status"} value="" placeholder={isFa ? "انتقال به وضعیت…" : "Move to status…"} disabled={!selectedKeys.size || !onStatusMoveRequest} onValueChange={(value) => { const target = boardColumns.columns.find((column) => column.id === value); if (target) onStatusMoveRequest?.(selectedIssues.map((issue) => issue.key), target) }} items={boardColumns.columns.map((column) => ({ value: column.id, label: column.name }))} className="h-9 min-w-[155px]" />
         <Button variant="outline" size="sm" className="h-9" onClick={() => onOpenExport(exportIssues)} disabled={!exportIssues.length}><Download className="size-3.5" />{isFa ? "خروجی برای AI" : "Export for AI"}</Button>
         <Button variant="outline" size="sm" className="h-9" onClick={onOpenImport}><Upload className="size-3.5" />{isFa ? "Import" : "Import JSON"}</Button>
       </div>
@@ -122,7 +128,7 @@ export function WorklogIssuePicker({ locale, date, issues, selectedKeys, current
       {view !== "table" ? <div className="flex items-center gap-2 border-b bg-muted/[0.08] px-3 py-2"><Button variant="outline" size="sm" onClick={() => toggleAllVisible(true)} disabled={!visible.length || allVisibleSelected}><CheckSquare2 className="size-3.5" />{isFa ? "انتخاب نمایان" : "Select visible"}</Button><Button variant="ghost" size="sm" onClick={() => onSelectedKeysChange(new Set())} disabled={!selectedKeys.size}>{isFa ? "پاک کردن انتخاب" : "Clear selection"}</Button>{someVisibleSelected ? <span className="text-[11px] text-muted-foreground">{selectedVisibleCount}/{visible.length}</span> : null}</div> : null}
 
       {view === "table" ? <WorklogIssueTable locale={locale} issues={visible} selectedKeys={selectedKeys} loggedMinutesByIssue={loggedMinutesByIssue} allVisibleSelected={allVisibleSelected} someVisibleSelected={someVisibleSelected} onToggle={toggle} onToggleAll={toggleAllVisible} /> : null}
-      {view === "board" ? <WorklogIssueBoard locale={locale} issues={visible} columns={boardColumns.columns} columnsSource={boardColumns.source} columnsLoading={boardColumns.loading} columnsError={boardColumns.error} selectedKeys={selectedKeys} loggedMinutesByIssue={loggedMinutesByIssue} onToggle={toggle} onMoveIssueStatus={onMoveIssueStatus} /> : null}
+      {view === "board" ? <WorklogIssueBoard locale={locale} issues={visible} columns={boardColumns.columns} columnsSource={boardColumns.source} columnsLoading={boardColumns.loading} columnsError={boardColumns.error} selectedKeys={selectedKeys} loggedMinutesByIssue={loggedMinutesByIssue} onToggle={toggle} onSelectRange={selectRange} onMoveIssueStatus={onMoveIssueStatus} onStatusMoveRequest={onStatusMoveRequest} /> : null}
       {view === "cards" ? <WorklogIssueCards locale={locale} issues={visible} selectedKeys={selectedKeys} loggedMinutesByIssue={loggedMinutesByIssue} onToggle={toggle} /> : null}
     </section>
   )

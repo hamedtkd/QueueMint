@@ -212,6 +212,22 @@ html[data-density="spacious"] .qm-worklog-draft-row { gap: 10px; padding: 12px 1
   .qm-worklog-compact-draft-trigger { display: inline-flex; position: fixed; z-index: 80; inset-inline-end: 18px; inset-block-end: 18px; gap: 8px; box-shadow: 0 10px 30px rgb(15 23 42 / .2); }
 }
 
+
+/* Worklog boards retain every Jira workflow destination, with compact empty lanes. */
+.qm-worklog-board-grid { display: flex; width: max-content; min-width: 100%; grid-auto-flow: unset; grid-auto-columns: unset; align-items: stretch; }
+.qm-worklog-board-grid .qm-worklog-lane { width: clamp(245px, 19vw, 280px); min-width: 245px; flex: 0 0 auto; }
+.qm-worklog-board-grid .qm-worklog-lane.is-empty { width: 156px; min-width: 156px; }
+.qm-worklog-board-grid .qm-worklog-lane-body { min-height: 110px; align-content: start; }
+.qm-worklog-board-scroll.qm-worklog-scroll { scrollbar-color: var(--qm-scrollbar-thumb) transparent; scrollbar-width: thin; }
+.qm-worklog-board-scroll.qm-worklog-scroll::-webkit-scrollbar-thumb { background: var(--qm-scrollbar-thumb); }
+.qm-worklog-board-scroll:focus-visible { outline: 2px solid var(--ring); outline-offset: -2px; }
+.qm-worklog-drag-count { position: absolute; z-index: 3; inset-block-start: 5px; inset-inline-end: 5px; padding: 2px 6px; border-radius: var(--qm-control-radius); background: var(--primary); color: var(--primary-foreground); font-size: 10px; font-weight: 700; pointer-events: none; }
+@media (max-width: 2000px) {
+  .qm-worklog-page:has(.qm-worklog-board-wrap) .qm-worklog-layout { grid-template-columns: minmax(0, 1fr); }
+  .qm-worklog-page:has(.qm-worklog-board-wrap) .qm-worklog-draft-column { display: none; }
+  .qm-worklog-page:has(.qm-worklog-board-wrap) .qm-worklog-compact-draft-trigger { display: inline-flex; position: fixed; z-index: 80; inset-inline-end: 18px; inset-block-end: 18px; gap: 8px; }
+}
+
 @media (pointer: coarse) {
   html[data-density] [data-slot="button"],
   html[data-density] [data-slot="input"],
