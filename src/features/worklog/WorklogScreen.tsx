@@ -5,8 +5,10 @@ import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet"
 import type { ActivityEntry } from "@/lib/storage"
-import type { AppLocale, JiraBoard, JiraBoardColumn, JiraLiveIssue, JiraProject, JiraSprint, JiraUser } from "@/types"
+import type { AppLocale, JiraBoard, JiraBoardColumn, JiraBulkStatusResult, JiraLiveIssue, JiraProject, JiraSprint, JiraUser } from "@/types"
 import { WorklogContextBar } from "./WorklogContextBar"
+import { JiraStatusMoveDialog } from "@/features/jira-status/JiraStatusMoveDialog"
+import { useJiraStatusMove } from "@/features/jira-status/useJiraStatusMove"
 import { WorklogDateToolbar } from "./WorklogDateToolbar"
 import { WorklogDraftSidebar } from "./WorklogDraftSidebar"
 import { WorklogExportSheet } from "./WorklogExportSheet"
@@ -20,7 +22,7 @@ import { formatWorklogMinutes, type WorklogDistributionStrategy } from "./worklo
 
 function startOfToday() { const date = new Date(); date.setHours(12, 0, 0, 0); return date }
 
-export function WorklogScreen({ locale, issues, selectedKeys, onSelectedKeysChange, currentUser, projectKey, projects, boards, boardId, sprints, contextLoading, onProjectChange, onBoardChange, onMoveIssueStatus, recordActivity }: {
+export function WorklogScreen({ locale, issues, selectedKeys, onSelectedKeysChange, currentUser, projectKey, projects, boards, boardId, sprints, contextLoading, onProjectChange, onBoardChange, onMoveIssueStatus, onMoveIssueStatuses, recordActivity }: {
   locale: AppLocale
   issues: JiraLiveIssue[]
   selectedKeys: Set<string>
@@ -35,6 +37,7 @@ export function WorklogScreen({ locale, issues, selectedKeys, onSelectedKeysChan
   onProjectChange: (key: string) => void
   onBoardChange: (id: number) => void
   onMoveIssueStatus?: (issueKey: string, target: Pick<JiraBoardColumn, "name" | "statusIds">) => Promise<boolean>
+  onMoveIssueStatuses?: (issueKeys: string[], target: Pick<JiraBoardColumn, "name" | "statusIds">) => Promise<JiraBulkStatusResult>
   recordActivity?: (input: Omit<ActivityEntry, "id" | "createdAt" | "projectKey" | "boardId">) => void
 }) {
   const isFa = locale === "fa"
@@ -50,6 +53,7 @@ export function WorklogScreen({ locale, issues, selectedKeys, onSelectedKeysChan
   const draftRef = useRef<HTMLDivElement>(null)
   const autoBuiltFor = useRef("")
   const model = useWorklogAssistant({ locale, issues, selectedKeys, currentUser, projectKey, boardId, date, strategy, recordActivity })
+  const statusMove = useJiraStatusMove(locale, issues, onMoveIssueStatuses)
   const dailyCandidateKeys = useMemo(() => new Set(model.dailyCandidates.map((issue) => issue.key)), [model.dailyCandidates])
   const scopeReady = Boolean(projectKey && boardId)
   const currentStep: 1 | 2 | 3 | 4 = model.draft.length ? 4 : selectedKeys.size ? 3 : scopeReady ? 2 : 1
@@ -106,7 +110,7 @@ export function WorklogScreen({ locale, issues, selectedKeys, onSelectedKeysChan
           <WorklogSummaryStrip locale={locale} targetMinutes={model.targetMinutes} dayMinutes={model.dayMinutes} scopeMinutes={model.scopeMinutes} remainingMinutes={model.remainingMinutes} draftMinutes={model.draftMinutes} daySummary={model.daySummary} date={date} />
           <WorklogWorkflowRail locale={locale} currentStep={currentStep} scopeReady={scopeReady} selectedCount={selectedKeys.size} draftCount={model.draft.length} draftMinutes={model.draftMinutes} onStep={scrollTo} />
           <div ref={scopeRef} className="scroll-mt-[calc(var(--qm-topbar-height)+72px)]"><WorklogContextBar locale={locale} projects={projects} projectKey={projectKey} boards={boards} boardId={boardId} sprints={sprints} sprintFilter={sprintFilter} loading={contextLoading} onProjectChange={onProjectChange} onBoardChange={onBoardChange} onSprintFilter={setSprintFilter} /></div>
-          <div ref={issueRef} className="qm-worklog-issue-stage scroll-mt-[calc(var(--qm-topbar-height)+72px)]"><WorklogIssuePicker locale={locale} date={date} issues={issues} selectedKeys={selectedKeys} currentUser={currentUser} boardId={boardId} sprintFilter={sprintFilter} dailyCandidateKeys={dailyCandidateKeys} loggedMinutesByIssue={model.loggedMinutesByIssue} onSelectedKeysChange={onSelectedKeysChange} onMoveIssueStatus={onMoveIssueStatus} onOpenExport={(items) => { setExportIssues(items); setExportOpen(true) }} onOpenImport={() => setImportOpen(true)} /></div>
+          <div ref={issueRef} className="qm-worklog-issue-stage scroll-mt-[calc(var(--qm-topbar-height)+72px)]"><WorklogIssuePicker locale={locale} date={date} issues={issues} selectedKeys={selectedKeys} currentUser={currentUser} boardId={boardId} sprintFilter={sprintFilter} dailyCandidateKeys={dailyCandidateKeys} loggedMinutesByIssue={model.loggedMinutesByIssue} onSelectedKeysChange={onSelectedKeysChange} onMoveIssueStatus={onMoveIssueStatus} onStatusMoveRequest={statusMove.request} onOpenExport={(items) => { setExportIssues(items); setExportOpen(true) }} onOpenImport={() => setImportOpen(true)} /></div>
         </div>
 
         <div ref={draftRef} className="qm-worklog-draft-column min-w-0 scroll-mt-[calc(var(--qm-topbar-height)+20px)]">{draftSidebar()}</div>
@@ -122,6 +126,7 @@ export function WorklogScreen({ locale, issues, selectedKeys, onSelectedKeysChan
         </SheetContent>
       </Sheet>
 
+      <JiraStatusMoveDialog locale={locale} state={statusMove} />
       <WorklogExportSheet open={exportOpen} onOpenChange={setExportOpen} locale={locale} issues={exportIssues} date={date} buildPackage={() => aiPackage(exportIssues)} />
       <WorklogImportSheet open={importOpen} onOpenChange={setImportOpen} locale={locale} issues={issues} onImport={(entries) => { model.setDraft(entries); onSelectedKeysChange(new Set(entries.map((entry) => entry.issueKey))); autoBuiltFor.current = entries.map((entry) => entry.issueKey).sort().join("|"); window.setTimeout(() => scrollTo(4), 40) }} />
     </div>

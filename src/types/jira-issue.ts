@@ -23,6 +23,13 @@ export interface JiraLiveIssue {
   storyPoints?: number
 }
 
+export interface JiraBulkStatusResult {
+  attempted: number
+  moved: string[]
+  skipped: string[]
+  failed: Array<{ key: string; error: string }>
+}
+
 export interface JiraIssueComment {
   id: string
   body?: string

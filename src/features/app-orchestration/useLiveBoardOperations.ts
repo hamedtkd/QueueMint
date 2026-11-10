@@ -14,12 +14,14 @@ import {
   transitionIssueToBoardColumn,
 } from "@/lib/jira"
 import { findPotentialDuplicates } from "@/lib/intelligence"
+import { executeStatusTransitions } from "@/features/jira-status/jira-status-batch"
 import type { ActivityEntry } from "@/lib/storage"
 import type {
   AppLocale,
   BulkIssue,
   BulkPayload,
   JiraIssueDetails,
+  JiraBulkStatusResult,
   JiraBoardColumn,
   JiraIssueSearchResult,
   JiraLiveIssue,
@@ -146,6 +148,33 @@ export function useLiveBoardOperations(options: LiveBoardOptions) {
     }
   }
 
+  async function transitionLiveIssues(keys: string[], target: Pick<JiraBoardColumn, "name" | "statusIds">): Promise<JiraBulkStatusResult> {
+    // Resolve selection against current board. Jira is authoritative: never move cards optimistically.
+    const indexed = new Map(liveIssues.map((issue) => [issue.key, issue]))
+    const unique = Array.from(new Set(keys)).filter((key) => indexed.has(key))
+    const skip = unique.filter((key) => {
+      const issue = indexed.get(key)!
+      return target.statusIds.length
+        ? Boolean(issue.statusId && target.statusIds.includes(issue.statusId))
+        : issue.status?.trim().toLowerCase() === target.name.trim().toLowerCase()
+    })
+    const movable = unique.filter((key) => !skip.includes(key))
+    const { moved, failed } = await executeStatusTransitions(
+      movable,
+      (key) => transitionIssueToBoardColumn(key, target.statusIds, target.name),
+      (error) => jiraErrorMessage(error, "Jira rejected the status transition."),
+    )
+    if (moved.length) {
+      await loadLiveBoard()
+      recordActivity({ kind: "move", outcome: failed.length ? "warning" : "success", title: "Moved issues to " + target.name, detail: moved.length + " moved, " + failed.length + " failed", issueKeys: moved })
+    }
+    const summary = moved.length + " " + (locale === "fa" ? "منتقل شد" : "moved") + (failed.length ? " · " + failed.length + " " + (locale === "fa" ? "ناموفق" : "failed") : "")
+    setLiveActionMessage(summary)
+    if (failed.length) toast.warning(locale === "fa" ? "برخی تسک‌ها جابه‌جا نشدند" : "Some Jira transitions failed", { description: summary + " · " + failed.slice(0, 2).map((item) => item.key + ": " + item.error).join("; ") })
+    else if (moved.length) toast.success(locale === "fa" ? "انتقال گروهی انجام شد" : "Jira issues moved", { description: summary + " → " + target.name })
+    return { attempted: movable.length, moved, skipped: skip, failed }
+  }
+
   async function assignLiveSelectionToMe() {
     const identity = metadata?.user?.name || metadata?.user?.key
     const keys = Array.from(liveSelectedKeys)
@@ -183,5 +212,5 @@ export function useLiveBoardOperations(options: LiveBoardOptions) {
     }
   }
 
-  return { loadLiveBoard, recordActivity, checkQuickDuplicates, moveLiveIssues, transitionLiveIssue, assignLiveSelectionToMe, openIssueDetails }
+  return { loadLiveBoard, recordActivity, checkQuickDuplicates, moveLiveIssues, transitionLiveIssue, transitionLiveIssues, assignLiveSelectionToMe, openIssueDetails }
 }

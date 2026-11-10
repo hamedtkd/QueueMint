@@ -1,8 +1,9 @@
-import { useEffect, useMemo, useState } from "react"
+import { useEffect, useMemo, useRef, useState } from "react"
 import { toast } from "sonner"
 import type { SavedIssueView } from "@/lib/storage"
 import { filterManageIssues, groupLiveIssues, type ManageIssueFilterState } from "./manage-utils"
 import { sortManageIssues, type ManageSort } from "./manage-sorting"
+import { selectBoardIssue } from "@/features/jira-status/jira-status-selection"
 import type { ManageJiraScreenProps, ManageView } from "./manage-types"
 
 type PendingManageMutation =
@@ -17,6 +18,7 @@ function normalizeMultiFilter(value?: string | string[]) {
 export function useManageJiraModel(props: ManageJiraScreenProps) {
   const { t, locale, project, selectedBoardId, sprints, priorities, metadata, issues, selectedKeys, setSelectedKeys, lastCreatedKeys, scope, setScope, search, onMove, savedViews, onSaveView } = props
   const [draggedKey, setDraggedKey] = useState<string | null>(null)
+  const lastSelected = useRef<string | null>(null)
   const [overLane, setOverLane] = useState<string | null>(null)
   const [moveTarget, setMoveTarget] = useState("")
   const [pendingMutation, setPendingMutation] = useState<PendingManageMutation | null>(null)
@@ -112,7 +114,14 @@ export function useManageJiraModel(props: ManageJiraScreenProps) {
     const next = new Set(selectedKeys)
     if (next.has(key)) next.delete(key)
     else next.add(key)
+    lastSelected.current = key
     setSelectedKeys(next)
+  }
+
+  function toggleRange(key: string) {
+    const order = view === "board" ? groups.flatMap((group) => group.entries.map((issue) => issue.key)) : pageIssues.map((issue) => issue.key)
+    setSelectedKeys(selectBoardIssue(order, selectedKeys, key, lastSelected.current, true))
+    lastSelected.current = key
   }
 
   function setAssigneeFilter(next: string[]) {
@@ -192,5 +201,5 @@ export function useManageJiraModel(props: ManageJiraScreenProps) {
     estimate: [{ value: "all", label: t.allEstimates }, { value: "estimated", label: t.estimated }, { value: "unestimated", label: t.unestimated }],
   }
 
-  return { draggedKey, setDraggedKey, overLane, setOverLane, moveTarget, pendingMutation, setPendingMutation, view, setView, sort, setSort, filtersOpen, setFiltersOpen, saveViewOpen, setSaveViewOpen, saveViewName, setSaveViewName, typeFilter, setTypeFilter, priorityFilter, setPriorityFilter, statusFilter, setStatusFilter, assigneeFilter, setAssigneeFilter, sprintFilter, setSprintFilter, labelFilter, setLabelFilter, estimateFilter, setEstimateFilter, myIssuesOnly, setMyIssuesOnly, page, setPage, pageSize, setPageSize, currentUser, matchingSavedViews, createdIssues, activeFilterCount, visibleIssues, hasActiveFiltering, createdScopeCount, boardScopeCount, pageCount, safePage, pageIssues, groups, allPageSelected, allMatchingSelected, moveItems, toggle, requestMoveSelection, requestAssignToMe, confirmPendingMutation, clearFilters, applySavedView, saveCurrentView, selectPage, selectMatching, filterItems }
+  return { draggedKey, setDraggedKey, overLane, setOverLane, moveTarget, pendingMutation, setPendingMutation, view, setView, sort, setSort, filtersOpen, setFiltersOpen, saveViewOpen, setSaveViewOpen, saveViewName, setSaveViewName, typeFilter, setTypeFilter, priorityFilter, setPriorityFilter, statusFilter, setStatusFilter, assigneeFilter, setAssigneeFilter, sprintFilter, setSprintFilter, labelFilter, setLabelFilter, estimateFilter, setEstimateFilter, myIssuesOnly, setMyIssuesOnly, page, setPage, pageSize, setPageSize, currentUser, matchingSavedViews, createdIssues, activeFilterCount, visibleIssues, hasActiveFiltering, createdScopeCount, boardScopeCount, pageCount, safePage, pageIssues, groups, allPageSelected, allMatchingSelected, moveItems, toggle, toggleRange, requestMoveSelection, requestAssignToMe, confirmPendingMutation, clearFilters, applySavedView, saveCurrentView, selectPage, selectMatching, filterItems }
 }

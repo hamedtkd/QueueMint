@@ -7,18 +7,19 @@ import { Sheet, SheetBody, SheetContent, SheetDescription, SheetFooter, SheetHea
 import { getJiraImageDataUrl, getJiraIssueExportDetails } from "@/lib/jira"
 import { downloadJson } from "@/lib/utils"
 import type { AppLocale, JiraLiveIssue } from "@/types"
-import type { buildWorklogAiPackage } from "./worklog-json"
+
 import { enrichWorklogAiPackage, type ExportProgress } from "./worklog-rich-export"
 
 type PreparedExport = { withImages: boolean; payload: unknown; skipped: number }
 
-export function WorklogExportSheet({ open, onOpenChange, locale, issues, date, buildPackage }: {
+export function WorklogExportSheet({ open, onOpenChange, locale, issues, date, filename, buildPackage }: {
   open: boolean
   onOpenChange: (open: boolean) => void
   locale: AppLocale
   issues: JiraLiveIssue[]
-  date: Date
-  buildPackage: () => ReturnType<typeof buildWorklogAiPackage>
+  date?: Date
+  filename?: string
+  buildPackage: () => { issues: Array<{ issueKey: string }> }
 }) {
   const isFa = locale === "fa"
   const [includeImages, setIncludeImages] = useState(false)
@@ -52,8 +53,9 @@ export function WorklogExportSheet({ open, onOpenChange, locale, issues, date, b
       }
       if (action === "copy") await navigator.clipboard.writeText(JSON.stringify(payload, null, 2))
       else {
-        const day = date.getFullYear() + "-" + String(date.getMonth() + 1).padStart(2, "0") + "-" + String(date.getDate()).padStart(2, "0")
-        downloadJson("queuemint-worklog-ai-" + day + ".json", payload)
+        const activeDate = date ?? new Date()
+        const day = activeDate.getFullYear() + "-" + String(activeDate.getMonth() + 1).padStart(2, "0") + "-" + String(activeDate.getDate()).padStart(2, "0")
+        downloadJson(filename ?? ("queuemint-worklog-ai-" + day + ".json"), payload)
       }
       setSkipped(missing)
       if (missing) toast.warning(isFa ? "برخی تصاویر در خروجی قرار نگرفتند؛ جزئیات در JSON ثبت شده است." : "Some images were skipped; details are in the JSON.")
