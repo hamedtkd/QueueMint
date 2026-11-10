@@ -6,7 +6,9 @@ The product focuses on workflows that are slow, repetitive, fragmented, or awkwa
 
 Current stable release: **v1.5.1**.
 
-Current release line: **v1.5.1 Source Cleanup**.
+Current published release line: **v1.5.1 Source Cleanup**.
+
+Next release candidate: **v1.6.0 Rich Jira Operations** (source version prepared; GitHub Release and store publication pending recorded browser/Jira smoke tests).
 
 ## Product principle
 
@@ -32,7 +34,9 @@ See [Product direction](docs/PRODUCT.md) and [Roadmap](docs/ROADMAP.md).
 - Detect likely duplicates locally, with optional semantic duplicate suggestions when AI access is explicitly enabled.
 - Use local Smart Draft suggestions without sending data externally, or optionally enable Smart Assistant with explicit per-request data controls.
 - Review and create issue batches safely before writing to Jira.
-- Manage Jira issues with filters, Saved Views, issue detail inspection, safe clone/move helpers, and bulk edit preview.
+- Manage Jira issues with filters, Saved Views, issue detail inspection, safe clone/move helpers, bulk edit preview, and verified-by-Jira batch status transitions with per-issue failure reporting.
+- Export selected or filtered Jira issues from both Manage Jira and Worklog with full descriptions and optional Base64 screenshot attachments (images are off by default, with bounded size and count).
+- Select multiple Worklog cards and drag to a Jira workflow column or use Move to status; handle up to five or more columns with compact empty lanes and horizontal board navigation.
 - Review today's Jira worklogs against a configurable daily target, prepare worklogs for selected issues, split a chosen target equally or by estimate weight, use Jira remaining estimates exactly without stretching to the daily target, and optionally ask AI for a reviewable allocation before writing anything to Jira.
 - Include an optional reviewed worklog in AI/JSON batch issue creation; QueueMint creates the issue first and reports worklog failures separately so issue creation is not rolled back.
 - Reuse Saved Actions and safe Automation rules/macros through the same preview-first bulk-edit path.

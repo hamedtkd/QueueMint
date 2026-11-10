@@ -4,7 +4,11 @@ Use this file when starting a new ChatGPT, coding-agent, or developer session. R
 
 ## Current state
 
-Current stable release: **v1.0.2**. The current development candidate is **v1.1.0 Worklog Assistant**.
+Latest published GitHub release: **v1.5.1**. Current source/release candidate: **v1.6.0 Rich Jira Operations**; public v1.6.0 tagging is **pending manual browser and Jira smoke testing**.
+
+v1.6.0 includes PR #34 (rich Jira descriptions and optional image export from Worklog) and PR #35 (Manage Jira rich export, batch Move to status, group drag of selected Worklog cards, and clearer multi-column board navigation). Only eligible selected issues are moved, and individual Jira transition failures remain visible and retryable. Both PRs were merged with passing CI. Version bump, candidate ZIP and final verification are tracked in the release PR. Do not claim Chrome Web Store publication or a production release before they occur.
+
+The historical v1.0-v1.1 details below are retained as implementation history, not as the current release status.
 
 The architecture refactor is complete. The strict 300-line production code limit has no exceptions. `App.tsx` and `Popup.tsx` are orchestration/composition layers rather than monoliths.
 

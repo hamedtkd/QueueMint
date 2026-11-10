@@ -1,5 +1,17 @@
 # Changelog
 
+## 1.6.0 (release candidate) - Rich Jira Operations
+
+- Enhanced Worklog AI/JSON export with full Jira issue descriptions, loaded only when exporting instead of during board browsing.
+- Added a default-off option to embed image attachments as Base64 for the Worklog and Manage Jira exports, with limits of 20 images, 1.5 MiB per image, and 10 MiB total. Skipped images are reported; Jira descriptions are preserved.
+- Added a dedicated rich export action to Manage Jira for selected or filtered issues with their statuses, labels, sprint context, and other metadata.
+- Added selecting multiple Worklog issue cards with Ctrl/Cmd, Shift ranges, or checkboxes, then moving the selected visible cards together through a drag action or a Move to status picker.
+- Added batch Move to status in Manage Jira alongside the existing sprint/backlog workflow, with confirmation, concurrency-bounded Jira transitions, individual failure reports, and retry for failed items.
+- Improved five-column Worklog board navigation with narrower empty destination lanes, visible horizontal scrolling controls, more usable board width, and a separate Draft sheet on typical desktop viewports.
+- Kept statuses authoritative in Jira: unsupported workflow transitions are not simulated locally, and normal Jira permissions remain enforced.
+- Added regression tests for rich exports, image caps, multi-selection, and partial batch transition failures.
+- **Release status:** candidate package only. Chrome/Edge clean-profile install, upgrade from v1.5.1, and authenticated Jira/Capture smoke tests require real-browser verification before creating the production v1.6.0 tag.
+
 ## 1.5.1 - Source Cleanup
 
 - Removed the accidental QueueMint-release-v1.5.0-fixed.ps1 helper from the repository source.

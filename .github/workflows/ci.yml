@@ -31,3 +31,17 @@ jobs:
         run: npm run check:release
       - name: Production dependency audit
         run: npm run security:audit
+      - name: Package release candidate
+        if: startsWith(github.ref, 'refs/heads/release/')
+        shell: bash
+        run: |
+          set -euo pipefail
+          version="$(node -p "require('./package.json').version")"
+          (cd dist && zip -qr "../queuemint-v${version}-candidate.zip" .)
+      - name: Upload release candidate
+        if: startsWith(github.ref, 'refs/heads/release/')
+        uses: actions/upload-artifact@v7
+        with:
+          name: QueueMint-release-candidate
+          path: queuemint-v*-candidate.zip
+          if-no-files-found: error
