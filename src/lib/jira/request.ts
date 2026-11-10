@@ -73,6 +73,17 @@ export async function getJiraAvatarDataUrl(value: string) {
   return request
 }
 
+// Request a one-off, authenticated same-origin image; unlike avatars, do not cache attachments.
+export async function getJiraImageDataUrl(value: string) {
+  if (!value) return null
+  const response = await sendRuntimeMessage<JiraRequestResponse<{ dataUrl?: string }>>(
+    { type: "QUEUEMINT_JIRA_FETCH_IMAGE", url: value },
+    "Could not load Jira attachment image.",
+  )
+  if (!response?.ok) throw jiraErrorFromResponse(response)
+  return typeof response.data?.dataUrl === "string" ? response.data.dataUrl : null
+}
+
 export async function openJira() {
   if (typeof chrome === "undefined" || !chrome.runtime?.id) throw new Error("Chrome extension APIs are unavailable. Load the built dist folder as an unpacked extension.")
   await sendRuntimeMessage<unknown>({ type: "QUEUEMINT_OPEN_JIRA" }, "Could not open Jira.")

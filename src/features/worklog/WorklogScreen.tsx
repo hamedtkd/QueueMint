@@ -4,12 +4,12 @@ import { toast } from "sonner"
 
 import { Button } from "@/components/ui/button"
 import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet"
-import { downloadJson } from "@/lib/utils"
 import type { ActivityEntry } from "@/lib/storage"
 import type { AppLocale, JiraBoard, JiraBoardColumn, JiraLiveIssue, JiraProject, JiraSprint, JiraUser } from "@/types"
 import { WorklogContextBar } from "./WorklogContextBar"
 import { WorklogDateToolbar } from "./WorklogDateToolbar"
 import { WorklogDraftSidebar } from "./WorklogDraftSidebar"
+import { WorklogExportSheet } from "./WorklogExportSheet"
 import { WorklogImportSheet } from "./WorklogImportSheet"
 import { WorklogIssuePicker } from "./WorklogIssuePicker"
 import { buildWorklogAiPackage } from "./worklog-json"
@@ -42,6 +42,8 @@ export function WorklogScreen({ locale, issues, selectedKeys, onSelectedKeysChan
   const [strategy, setStrategy] = useState<WorklogDistributionStrategy>("estimate")
   const [sprintFilter, setSprintFilter] = useState("all")
   const [importOpen, setImportOpen] = useState(false)
+  const [exportOpen, setExportOpen] = useState(false)
+  const [exportIssues, setExportIssues] = useState<JiraLiveIssue[]>([])
   const [compactDraftOpen, setCompactDraftOpen] = useState(false)
   const scopeRef = useRef<HTMLDivElement>(null)
   const issueRef = useRef<HTMLDivElement>(null)
@@ -66,11 +68,6 @@ export function WorklogScreen({ locale, issues, selectedKeys, onSelectedKeysChan
   function aiPackage(exportIssues: JiraLiveIssue[]) {
     const target = model.selectedTargetMinutes || model.remainingMinutes || model.targetMinutes
     return buildWorklogAiPackage(exportIssues, model.targetMinutes, model.dayMinutes, target, model.note, model.loggedMinutesByIssue, date)
-  }
-
-  async function copyForAi(exportIssues: JiraLiveIssue[]) {
-    try { await navigator.clipboard.writeText(JSON.stringify(aiPackage(exportIssues), null, 2)); toast.success(isFa ? "JSON برای AI کپی شد" : "AI JSON copied") }
-    catch { toast.error(isFa ? "کپی JSON ناموفق بود" : "Could not copy JSON") }
   }
 
   function changeDate(next: Date) { setDate(next) }
@@ -109,7 +106,7 @@ export function WorklogScreen({ locale, issues, selectedKeys, onSelectedKeysChan
           <WorklogSummaryStrip locale={locale} targetMinutes={model.targetMinutes} dayMinutes={model.dayMinutes} scopeMinutes={model.scopeMinutes} remainingMinutes={model.remainingMinutes} draftMinutes={model.draftMinutes} daySummary={model.daySummary} date={date} />
           <WorklogWorkflowRail locale={locale} currentStep={currentStep} scopeReady={scopeReady} selectedCount={selectedKeys.size} draftCount={model.draft.length} draftMinutes={model.draftMinutes} onStep={scrollTo} />
           <div ref={scopeRef} className="scroll-mt-[calc(var(--qm-topbar-height)+72px)]"><WorklogContextBar locale={locale} projects={projects} projectKey={projectKey} boards={boards} boardId={boardId} sprints={sprints} sprintFilter={sprintFilter} loading={contextLoading} onProjectChange={onProjectChange} onBoardChange={onBoardChange} onSprintFilter={setSprintFilter} /></div>
-          <div ref={issueRef} className="qm-worklog-issue-stage scroll-mt-[calc(var(--qm-topbar-height)+72px)]"><WorklogIssuePicker locale={locale} date={date} issues={issues} selectedKeys={selectedKeys} currentUser={currentUser} boardId={boardId} sprintFilter={sprintFilter} dailyCandidateKeys={dailyCandidateKeys} loggedMinutesByIssue={model.loggedMinutesByIssue} onSelectedKeysChange={onSelectedKeysChange} onMoveIssueStatus={onMoveIssueStatus} onCopyForAi={(items) => void copyForAi(items)} onDownloadForAi={(items) => downloadJson(`queuemint-worklog-ai-${date.toISOString().slice(0, 10)}.json`, aiPackage(items))} onOpenImport={() => setImportOpen(true)} /></div>
+          <div ref={issueRef} className="qm-worklog-issue-stage scroll-mt-[calc(var(--qm-topbar-height)+72px)]"><WorklogIssuePicker locale={locale} date={date} issues={issues} selectedKeys={selectedKeys} currentUser={currentUser} boardId={boardId} sprintFilter={sprintFilter} dailyCandidateKeys={dailyCandidateKeys} loggedMinutesByIssue={model.loggedMinutesByIssue} onSelectedKeysChange={onSelectedKeysChange} onMoveIssueStatus={onMoveIssueStatus} onOpenExport={(items) => { setExportIssues(items); setExportOpen(true) }} onOpenImport={() => setImportOpen(true)} /></div>
         </div>
 
         <div ref={draftRef} className="qm-worklog-draft-column min-w-0 scroll-mt-[calc(var(--qm-topbar-height)+20px)]">{draftSidebar()}</div>
@@ -125,6 +122,7 @@ export function WorklogScreen({ locale, issues, selectedKeys, onSelectedKeysChan
         </SheetContent>
       </Sheet>
 
+      <WorklogExportSheet open={exportOpen} onOpenChange={setExportOpen} locale={locale} issues={exportIssues} date={date} buildPackage={() => aiPackage(exportIssues)} />
       <WorklogImportSheet open={importOpen} onOpenChange={setImportOpen} locale={locale} issues={issues} onImport={(entries) => { model.setDraft(entries); onSelectedKeysChange(new Set(entries.map((entry) => entry.issueKey))); autoBuiltFor.current = entries.map((entry) => entry.issueKey).sort().join("|"); window.setTimeout(() => scrollTo(4), 40) }} />
     </div>
   )
