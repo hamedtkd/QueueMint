@@ -37,6 +37,7 @@ export function WorklogIssueBoard({ locale, issues, columns, columnsSource, colu
 }) {
   const isFa = locale === "fa"
   const [dragKeys, setDragKeys] = useState<string[]>([])
+  const [dragSourceKey, setDragSourceKey] = useState<string | null>(null)
   const [overColumnId, setOverColumnId] = useState<string | null>(null)
   const [movingKey, setMovingKey] = useState<string | null>(null)
   const scrollRef = useRef<HTMLDivElement>(null)
@@ -53,6 +54,7 @@ export function WorklogIssueBoard({ locale, issues, columns, columnsSource, colu
   async function dropInto(column: JiraBoardColumn) {
     const moving = eligibleStatusMoveKeys(issues, dragKeys, column)
     setDragKeys([])
+    setDragSourceKey(null)
     setOverColumnId(null)
     if (!moving.length) return
     if (dragKeys.length > 1 && onStatusMoveRequest) {
@@ -113,12 +115,13 @@ export function WorklogIssueBoard({ locale, issues, columns, columnsSource, colu
                 onDragStart={(event) => {
                   const keys = dragSelection(issues, selectedKeys, issue.key)
                   setDragKeys(keys)
+                  setDragSourceKey(issue.key)
                   event.dataTransfer.effectAllowed = "move"
                   event.dataTransfer.setData("text/plain", keys.join(","))
                 }}
-                onDragEnd={() => { setDragKeys([]); setOverColumnId(null) }}
+                onDragEnd={() => { setDragKeys([]); setDragSourceKey(null); setOverColumnId(null) }}
               >
-                {dragKeys.length > 1 && dragKeys[0] === issue.key ? <span className="qm-worklog-drag-count">{dragKeys.length} {isFa ? "تسک" : "issues"}</span> : null}
+                {dragKeys.length > 1 && dragSourceKey === issue.key ? <span className="qm-worklog-drag-count">{dragKeys.length} {isFa ? "تسک" : "issues"}</span> : null}
                 <WorklogIssueMiniCard compact locale={locale} issue={issue} selected={selectedKeys.has(issue.key)} loggedMinutes={loggedMinutesByIssue[issue.key] ?? 0} onToggle={() => onToggle(issue.key)} />
               </div>) : <div className={cn("grid min-h-24 place-items-center rounded-[var(--qm-control-radius)] border border-dashed bg-background/55 px-2 text-center text-[11px] text-muted-foreground", overColumnId === column.id && droppable && "border-primary/45 bg-primary/[0.04] text-primary")}>{overColumnId === column.id && droppable ? (isFa ? "برای انتقال اینجا رها کن" : "Drop to move") : (isFa ? "بدون تسک" : "Empty")}</div>}</div>
             </section>
