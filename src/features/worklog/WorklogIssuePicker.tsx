@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react"
-import { Activity, ArrowUpDown, BookOpen, Bug, CheckSquare2, Clock3, ClipboardCopy, Columns3, Download, Filter, Grid2X2, ListFilter, Search, Shapes, Table2, Upload, UserRound, UserX, UsersRound, X } from "lucide-react"
+import { Activity, ArrowUpDown, BookOpen, Bug, CheckSquare2, Clock3, Columns3, Download, Filter, Grid2X2, ListFilter, Search, Shapes, Table2, Upload, UserRound, UserX, UsersRound, X } from "lucide-react"
 
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -20,7 +20,7 @@ function itemLabel(items: WorklogFilterOption[], value: string) { return items.f
 function userAvatar(user?: JiraUser) { return user?.avatarUrls?.["24x24"] ?? user?.avatarUrls?.["32x32"] ?? user?.avatarUrls?.["48x48"] }
 function typeIcon(type: string) { const value = type.toLowerCase(); return value.includes("bug") ? Bug : value.includes("story") ? BookOpen : value.includes("task") ? CheckSquare2 : Shapes }
 
-export function WorklogIssuePicker({ locale, date, issues, selectedKeys, currentUser, boardId, sprintFilter, dailyCandidateKeys, loggedMinutesByIssue, onSelectedKeysChange, onMoveIssueStatus, onCopyForAi, onDownloadForAi, onOpenImport }: {
+export function WorklogIssuePicker({ locale, date, issues, selectedKeys, currentUser, boardId, sprintFilter, dailyCandidateKeys, loggedMinutesByIssue, onSelectedKeysChange, onMoveIssueStatus, onOpenExport, onOpenImport }: {
   locale: AppLocale
   date: Date
   issues: JiraLiveIssue[]
@@ -32,8 +32,7 @@ export function WorklogIssuePicker({ locale, date, issues, selectedKeys, current
   loggedMinutesByIssue: Record<string, number>
   onSelectedKeysChange: (keys: Set<string>) => void
   onMoveIssueStatus?: (issueKey: string, target: Pick<JiraBoardColumn, "name" | "statusIds">) => Promise<boolean>
-  onCopyForAi: (issues: JiraLiveIssue[]) => void
-  onDownloadForAi: (issues: JiraLiveIssue[]) => void
+  onOpenExport: (issues: JiraLiveIssue[]) => void
   onOpenImport: () => void
 }) {
   const isFa = locale === "fa"
@@ -101,8 +100,7 @@ export function WorklogIssuePicker({ locale, date, issues, selectedKeys, current
         <Button variant="outline" size="sm" className="h-9" onClick={() => setFiltersOpen((value) => !value)} aria-expanded={filtersOpen}><Filter className="size-3.5" />{isFa ? "فیلترها" : "Filters"}{activeFilters ? <Badge className="ms-1 h-4 min-w-4 px-1 text-[9px]">{activeFilters}</Badge> : null}</Button>
         <WorklogFilterSelect ariaLabel={isFa ? "مرتب‌سازی تسک‌ها" : "Sort issues"} value={sort} items={sortItems} onValueChange={(value) => setSort(value as WorklogIssueSort)} className="h-9 min-w-[210px]" />
         <span className="hidden h-7 w-px bg-border 2xl:block" />
-        <Button variant="ghost" size="sm" className="h-9" onClick={() => onCopyForAi(exportIssues)} disabled={!exportIssues.length}><ClipboardCopy className="size-3.5" /><span className="hidden 2xl:inline">{isFa ? "کپی برای AI" : "Copy for AI"}</span></Button>
-        <Button variant="ghost" size="icon-sm" className="size-9" onClick={() => onDownloadForAi(exportIssues)} disabled={!exportIssues.length} aria-label={isFa ? "دانلود JSON" : "Download JSON"}><Download className="size-3.5" /></Button>
+        <Button variant="outline" size="sm" className="h-9" onClick={() => onOpenExport(exportIssues)} disabled={!exportIssues.length}><Download className="size-3.5" />{isFa ? "خروجی برای AI" : "Export for AI"}</Button>
         <Button variant="outline" size="sm" className="h-9" onClick={onOpenImport}><Upload className="size-3.5" />{isFa ? "Import" : "Import JSON"}</Button>
       </div>
 

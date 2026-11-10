@@ -217,7 +217,7 @@ QueueMint includes a preview-first time logging workflow while keeping Jira work
 - The relevant-today filter requires evidence from today: an existing worklog, an update today, or completion today. In Progress by itself is not enough. At most eight issues are ranked.
 - Estimates never decide what the user worked on. After selection, they can either weight a chosen target duration or be used exactly through Estimate only mode, which uses Jira remaining estimate and does not stretch worklogs to the daily target.
 - Each issue row exposes status, assignee, sprint/backlog, estimate, time already logged today, and last update.
-- Worklog context can be copied/downloaded as an AI-ready JSON package with selected/visible issue metadata and already-logged time.
+- Worklog context can be copied/downloaded as an AI-ready JSON package with selected/visible issue metadata, already-logged time, and the full per-issue Jira description. Images are opt-in, embedded as Base64 from Jira attachments only on explicit export, with 20-image, 1.5 MiB/image, and 10 MiB total caps; skipped images are reported in the JSON and UI.
 - Worklog descriptions never submit blank: per-issue descriptions override the shared draft description, and otherwise QueueMint generates `Worked on ISSUE-KEY: issue summary` with a final issue-key-only fallback in the Jira writer.
 - AI-produced JSON can be pasted or uploaded and is converted into the same editable review table before any Jira write.
 - Optional OpenAI allocation uses only the explicit selected issue set plus the user's work note and disclosed context.

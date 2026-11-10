@@ -258,12 +258,12 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     return true
   }
 
-  if (message.type === "QUEUEMINT_JIRA_FETCH_AVATAR") {
+  if (message.type === "QUEUEMINT_JIRA_FETCH_AVATAR" || message.type === "QUEUEMINT_JIRA_FETCH_IMAGE") {
     loadConnection().then((connection) => {
       if (!connection || !isSafeSameOriginAssetUrl(message.url, connection.origin)) {
         return { ok: false, error: { code: "INVALID_AVATAR_URL", message: "Blocked invalid Jira avatar URL." } }
       }
-      return forwardToJiraTab({ type: "QUEUEMINT_JIRA_FETCH_AVATAR", url: message.url })
+      return forwardToJiraTab({ type: message.type, url: message.url })
     }).then(sendResponse)
     return true
   }

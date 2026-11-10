@@ -39,6 +39,18 @@ export async function getJiraIssueDetails(issueKey: string, storyPointsFieldId?:
   }
 }
 
+// Export only the fields needed by Worklog. Avoid fetching Jira comments and unrelated private fields.
+export async function getJiraIssueExportDetails(issueKey: string) {
+  if (!/^[A-Z][A-Z0-9_]*-\d+$/i.test(issueKey)) throw new Error("Invalid Jira issue key.")
+  const raw = await sendJiraRequest<RawDetails>("/rest/api/2/issue/" + encodeURIComponent(issueKey) + "?fields=description%2Cattachment")
+  if (!raw?.id || !raw?.key) throw new Error("Jira did not return the requested issue.")
+  return {
+    description: typeof raw.fields?.description === "string" ? raw.fields.description : "",
+    attachments: (raw.fields?.attachment ?? []).filter((item): item is { id: string; filename: string; size?: number; mimeType?: string; content?: string; thumbnail?: string; author?: JiraUser } =>
+      typeof item?.id === "string" && typeof item?.filename === "string"),
+  }
+}
+
 export async function cloneJiraIssue(issueKey: string, options: CloneIssueOptions) {
   const details = await getJiraIssueDetails(issueKey)
   const targetProjectKey = options.targetProjectKey.replace(/[^A-Za-z0-9_-]/g, "")

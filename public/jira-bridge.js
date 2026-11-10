@@ -106,7 +106,7 @@
       return true
     }
 
-    if (message.type === "QUEUEMINT_JIRA_FETCH_AVATAR") {
+    if (message.type === "QUEUEMINT_JIRA_FETCH_AVATAR" || message.type === "QUEUEMINT_JIRA_FETCH_IMAGE") {
       const url = safeSameOriginAssetUrl(message.url)
       if (!url) {
         sendResponse({ ok: false, error: { code: "INVALID_AVATAR_URL", message: "Blocked unsafe Jira avatar URL." } })
