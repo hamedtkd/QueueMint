@@ -14,6 +14,7 @@ import {
   transitionIssueToBoardColumn,
 } from "@/lib/jira"
 import { findPotentialDuplicates } from "@/lib/intelligence"
+import { executeStatusTransitions } from "@/features/jira-status/jira-status-batch"
 import type { ActivityEntry } from "@/lib/storage"
 import type {
   AppLocale,
@@ -158,16 +159,11 @@ export function useLiveBoardOperations(options: LiveBoardOptions) {
         : issue.status?.trim().toLowerCase() === target.name.trim().toLowerCase()
     })
     const movable = unique.filter((key) => !skip.includes(key))
-    const moved: string[] = []
-    const failed: JiraBulkStatusResult["failed"] = []
-    let cursor = 0
-    await Promise.all(Array.from({ length: Math.min(3, movable.length) }, async () => {
-      while (cursor < movable.length) {
-        const key = movable[cursor++]
-        try { await transitionIssueToBoardColumn(key, target.statusIds, target.name); moved.push(key) }
-        catch (error) { failed.push({ key, error: jiraErrorMessage(error, "Jira rejected the status transition.") }) }
-      }
-    }))
+    const { moved, failed } = await executeStatusTransitions(
+      movable,
+      (key) => transitionIssueToBoardColumn(key, target.statusIds, target.name),
+      (error) => jiraErrorMessage(error, "Jira rejected the status transition."),
+    )
     if (moved.length) {
       await loadLiveBoard()
       recordActivity({ kind: "move", outcome: failed.length ? "warning" : "success", title: "Moved issues to " + target.name, detail: moved.length + " moved, " + failed.length + " failed", issueKeys: moved })

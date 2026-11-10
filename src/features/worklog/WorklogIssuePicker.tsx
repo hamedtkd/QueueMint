@@ -9,7 +9,7 @@ import type { AppLocale, JiraBoardColumn, JiraLiveIssue, JiraUser } from "@/type
 import { EMPTY_WORKLOG_FILTERS, filterWorklogIssues, type WorklogFilters, worklogFilterCount } from "./worklog-filtering"
 import { sortWorklogIssues, type WorklogIssueSort } from "./worklog-issues"
 import { WorklogFilterSelect, type WorklogFilterOption } from "./WorklogFilterSelect"
-import { SimpleSelect } from "@/components/jira-controls"
+import { JiraStatusMoveSelect } from "@/features/jira-status/JiraStatusMoveSelect"
 import { selectBoardIssue } from "@/features/jira-status/jira-status-selection"
 import { WorklogIssueBoard } from "./WorklogIssueBoard"
 import { WorklogIssueCards } from "./WorklogIssueCards"
@@ -105,7 +105,7 @@ export function WorklogIssuePicker({ locale, date, issues, selectedKeys, current
         <Button variant="outline" size="sm" className="h-9" onClick={() => setFiltersOpen((value) => !value)} aria-expanded={filtersOpen}><Filter className="size-3.5" />{isFa ? "فیلترها" : "Filters"}{activeFilters ? <Badge className="ms-1 h-4 min-w-4 px-1 text-[9px]">{activeFilters}</Badge> : null}</Button>
         <WorklogFilterSelect ariaLabel={isFa ? "مرتب‌سازی تسک‌ها" : "Sort issues"} value={sort} items={sortItems} onValueChange={(value) => setSort(value as WorklogIssueSort)} className="h-9 min-w-[210px]" />
         <span className="hidden h-7 w-px bg-border 2xl:block" />
-        <SimpleSelect ariaLabel={isFa ? "انتقال انتخاب‌شده‌ها به وضعیت" : "Move selected issues to status"} value="" placeholder={isFa ? "انتقال به وضعیت…" : "Move to status…"} disabled={!selectedKeys.size || !onStatusMoveRequest} onValueChange={(value) => { const target = boardColumns.columns.find((column) => column.id === value); if (target) onStatusMoveRequest?.(selectedIssues.map((issue) => issue.key), target) }} items={boardColumns.columns.map((column) => ({ value: column.id, label: column.name }))} className="h-9 min-w-[155px]" />
+        <JiraStatusMoveSelect locale={locale} columns={boardColumns.columns} keys={selectedIssues.map((issue) => issue.key)} disabled={!onStatusMoveRequest} onRequest={(keys, target) => onStatusMoveRequest?.(keys, target)} />
         <Button variant="outline" size="sm" className="h-9" onClick={() => onOpenExport(exportIssues)} disabled={!exportIssues.length}><Download className="size-3.5" />{isFa ? "خروجی برای AI" : "Export for AI"}</Button>
         <Button variant="outline" size="sm" className="h-9" onClick={onOpenImport}><Upload className="size-3.5" />{isFa ? "Import" : "Import JSON"}</Button>
       </div>

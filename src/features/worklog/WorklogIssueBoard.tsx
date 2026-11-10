@@ -55,7 +55,7 @@ export function WorklogIssueBoard({ locale, issues, columns, columnsSource, colu
     setDragKeys([])
     setOverColumnId(null)
     if (!moving.length) return
-    if (moving.length > 1 && onStatusMoveRequest) {
+    if (dragKeys.length > 1 && onStatusMoveRequest) {
       onStatusMoveRequest(moving, { name: column.name, statusIds: column.statusIds })
       return
     }

@@ -15,6 +15,7 @@ import { ManageMutationConfirmDialog } from "./ManageMutationConfirmDialog"
 import { ManagePowerTools } from "./ManagePowerTools"
 import { buildManageJiraAiPackage } from "./manage-export"
 import { WorklogExportSheet } from "@/features/worklog/WorklogExportSheet"
+import { JiraStatusMoveSelect } from "@/features/jira-status/JiraStatusMoveSelect"
 import type { ManageJiraScreenProps } from "./manage-types"
 import { useManageJiraModel } from "./useManageJiraModel"
 
@@ -157,7 +158,7 @@ return (
           {visibleIssues.length > pageIssues.length ? <Button variant="ghost" size="sm" onClick={selectMatching}>{allMatchingSelected ? t.clearSelection : `${t.selectMatching} (${visibleIssues.length})`}</Button> : null}
           <div className="ms-auto flex flex-wrap items-center gap-2">
             <SimpleSelect ariaLabel={locale === "fa" ? "انتقال به اسپرینت یا بک‌لاگ" : "Move to sprint or backlog"} value={moveTarget} onValueChange={requestMoveSelection} className="min-w-[180px]" placeholder={t.moveSelected} disabled={!selectedKeys.size} items={moveItems} />
-            <SimpleSelect ariaLabel={locale === "fa" ? "انتقال انتخاب‌شده‌ها به وضعیت" : "Move selected issues to status"} value="" className="min-w-[170px]" placeholder={locale === "fa" ? "انتقال به وضعیت…" : "Move to status…"} disabled={!selectedKeys.size || !args.onTransitionStatuses} items={statusColumns.map((column) => ({ value: column.id, label: column.name }))} onValueChange={(value) => { const target = statusColumns.find((column) => column.id === value); if (target) onRequestStatusMove(Array.from(selectedKeys), target) }} />
+            <JiraStatusMoveSelect locale={locale} columns={statusColumns} keys={Array.from(selectedKeys)} disabled={!args.onTransitionStatuses} onRequest={onRequestStatusMove} />
             <Button variant="outline" size="sm" onClick={requestAssignToMe} disabled={!selectedKeys.size || !currentUser}><UserCheck className="size-4" />{t.assignToMe}</Button>
             <Button variant="outline" size="sm" onClick={onBulkEdit} disabled={!selectedKeys.size}><UsersRound className="size-4" />{t.bulkEdit}</Button>
             <Button variant="outline" size="sm" onClick={onWorklog} disabled={!selectedKeys.size}><TimerReset className="size-4" />{locale === "fa" ? "ثبت زمان" : "Log work"}</Button>
