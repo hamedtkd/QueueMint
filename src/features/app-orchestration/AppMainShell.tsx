@@ -139,7 +139,7 @@ export function AppMainShell({ state: s, derived: d, actions: a }: Props) {
                 <WorklogScreen
                   locale={s.locale} issues={s.liveIssues} selectedKeys={s.worklogSelectedKeys} onSelectedKeysChange={s.setWorklogSelectedKeys} currentUser={s.metadata?.user}
                   projectKey={s.project?.key ?? payload?.project} projects={s.metadata?.projects ?? []} boards={s.boards} boardId={s.selectedBoardId} sprints={s.sprints} contextLoading={s.loadingProject}
-                  onProjectChange={(key) => void a.project.chooseProject(key)} onBoardChange={(id) => void a.project.chooseBoard(id)} onMoveIssueStatus={a.live.transitionLiveIssue} recordActivity={a.live.recordActivity}
+                  onProjectChange={(key) => void a.project.chooseProject(key)} onBoardChange={(id) => void a.project.chooseBoard(id)} onMoveIssueStatus={a.live.transitionLiveIssue} onMoveIssueStatuses={a.live.transitionLiveIssues} recordActivity={a.live.recordActivity}
                 />
               </Suspense>
             ) : s.mode === "customize" ? (
@@ -166,7 +166,7 @@ export function AppMainShell({ state: s, derived: d, actions: a }: Props) {
                 users={s.assignableUsers} metadata={s.metadata} issues={s.liveIssues} selectedKeys={s.liveSelectedKeys} setSelectedKeys={s.setLiveSelectedKeys}
                 lastCreatedKeys={s.lastCreatedKeys} scope={s.liveScope} setScope={s.setLiveScope} search={s.liveSearch} setSearch={s.setLiveSearch}
                 loading={s.loadingLive} message={s.liveActionMessage} onRefresh={() => void a.live.loadLiveBoard()} onMove={(keys, sprintId) => void a.live.moveLiveIssues(keys, sprintId)}
-                onAssignToMe={() => void a.live.assignLiveSelectionToMe()} onBulkEdit={() => { s.setActiveAutomationRuleId(null); s.setLiveBulkOpen(true) }}
+                onAssignToMe={() => void a.live.assignLiveSelectionToMe()} onTransitionStatuses={a.live.transitionLiveIssues} onBulkEdit={() => { s.setActiveAutomationRuleId(null); s.setLiveBulkOpen(true) }}
                 onWorklog={() => { s.setWorklogSelectedKeys(new Set(s.liveSelectedKeys)); s.setMode("worklog") }}
                 onPreparePowerTool={a.automation.preparePowerTool}
                 savedActions={s.savedActions} onUseSavedAction={a.automation.loadSavedAction} onDeleteSavedAction={a.automation.deleteSavedAction}
