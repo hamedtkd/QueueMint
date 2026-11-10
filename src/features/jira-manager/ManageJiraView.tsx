@@ -1,5 +1,5 @@
-import { type ChangeEvent } from "react"
-import { ArrowUpDown, Bookmark, ChevronLeft, ChevronRight, CircleDot, Eye, History, Inbox, Layers3, Leaf, List, ListChecks, LoaderCircle, Play, RefreshCcw, TimerReset, Save, Search, SlidersHorizontal, SquareKanban, Trash2, UserCheck, UsersRound, XCircle } from "lucide-react"
+import { useState, type ChangeEvent } from "react"
+import { ArrowUpDown, Bookmark, ChevronLeft, ChevronRight, CircleDot, Eye, History, Download, Inbox, Layers3, Leaf, List, ListChecks, LoaderCircle, Play, RefreshCcw, TimerReset, Save, Search, SlidersHorizontal, SquareKanban, Trash2, UserCheck, UsersRound, XCircle } from "lucide-react"
 import { SimpleSelect, SprintVisual } from "@/components/jira-controls"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -12,12 +12,16 @@ import { LiveIssueCard, LiveIssueListRow } from "./LiveIssueViews"
 import { ManageFiltersPanel } from "./ManageFiltersPanel"
 import { ManageMutationConfirmDialog } from "./ManageMutationConfirmDialog"
 import { ManagePowerTools } from "./ManagePowerTools"
+import { buildManageJiraAiPackage } from "./manage-export"
+import { WorklogExportSheet } from "@/features/worklog/WorklogExportSheet"
 import type { ManageJiraScreenProps } from "./manage-types"
 import { useManageJiraModel } from "./useManageJiraModel"
 
 type ManageJiraViewProps = ManageJiraScreenProps & ReturnType<typeof useManageJiraModel>
 
 export function ManageJiraView(args: ManageJiraViewProps) {
+  const [exportOpen, setExportOpen] = useState(false)
+  const [exportIssues, setExportIssues] = useState<typeof args.issues>([])
   const { t, locale, project, boards, selectedBoardId, boardLoading, onBoardChange, sprints, users, issues, selectedKeys, scope, setScope, search, setSearch, loading, message, onRefresh, onMove, onBulkEdit, onWorklog, onPreparePowerTool, savedActions, onUseSavedAction, onDeleteSavedAction, onDeleteView, onOpenIssue, historyCount, onHistory, onDelete, draggedKey, setDraggedKey, overLane, setOverLane, moveTarget, pendingMutation, setPendingMutation, view, setView, sort, setSort, filtersOpen, setFiltersOpen, saveViewOpen, setSaveViewOpen, saveViewName, setSaveViewName, typeFilter, setTypeFilter, priorityFilter, setPriorityFilter, statusFilter, setStatusFilter, assigneeFilter, setAssigneeFilter, sprintFilter, setSprintFilter, labelFilter, setLabelFilter, estimateFilter, setEstimateFilter, myIssuesOnly, setMyIssuesOnly, setPage, pageSize, setPageSize, currentUser, matchingSavedViews, createdIssues, activeFilterCount, visibleIssues, hasActiveFiltering, createdScopeCount, boardScopeCount, pageCount, safePage, pageIssues, groups, allPageSelected, allMatchingSelected, moveItems, toggle, requestMoveSelection, requestAssignToMe, confirmPendingMutation, clearFilters, applySavedView, saveCurrentView, selectPage, selectMatching, filterItems } = args
 return (
   <div className="qm-screen animate-in fade-in slide-in-from-bottom-2 duration-200">
@@ -145,6 +149,7 @@ return (
           <span className="text-sm font-medium">{t.selected}</span>
           <span className="qm-mini-divider" aria-hidden="true" />
           <Button variant="ghost" size="sm" onClick={selectPage}>{allPageSelected ? t.clearSelection : t.selectVisible}</Button>
+          <Button variant="outline" size="sm" disabled={!visibleIssues.length} onClick={() => { setExportIssues(selectedKeys.size ? visibleIssues.filter((issue) => selectedKeys.has(issue.key)) : visibleIssues); setExportOpen(true) }}><Download className="size-3.5" />{locale === "fa" ? "خروجی برای AI" : "Export for AI"}</Button>
           {visibleIssues.length > pageIssues.length ? <Button variant="ghost" size="sm" onClick={selectMatching}>{allMatchingSelected ? t.clearSelection : `${t.selectMatching} (${visibleIssues.length})`}</Button> : null}
           <div className="ms-auto hidden items-center gap-2 lg:flex">
             <SimpleSelect value={moveTarget} onValueChange={requestMoveSelection} className="min-w-[220px]" placeholder={t.moveSelected} disabled={!selectedKeys.size} items={moveItems} />
