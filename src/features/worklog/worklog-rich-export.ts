@@ -73,8 +73,8 @@ export async function enrichWorklogAiPackage<T extends BasePackage>(base: T, opt
           included++
           totalBytes += data.bytes
           const image: ExportedImage = { id: attachment.id, filename: attachment.filename, mimeType: data.mimeType, sizeBytes: data.bytes, dataUrl: dataUrl! }
-          issues[candidate.index].images ??= []
-          issues[candidate.index].images.push(image)
+          const outputIssue = issues[candidate.index]
+          outputIssue.images = [...(outputIssue.images ?? []), image]
         }
       }
       options.onProgress?.({ phase: "images", completed: index + 1, total: candidates.length })
