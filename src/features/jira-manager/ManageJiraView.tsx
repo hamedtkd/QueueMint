@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input"
 import { Sheet, SheetBody, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle } from "@/components/ui/sheet"
 import { ContextItem, BoardContextItem } from "@/features/review/ReviewContext"
 import { cn } from "@/lib/utils"
+import type { JiraBoardColumn } from "@/types"
 import { LiveIssueCard, LiveIssueListRow } from "./LiveIssueViews"
 import { ManageFiltersPanel } from "./ManageFiltersPanel"
 import { ManageMutationConfirmDialog } from "./ManageMutationConfirmDialog"
@@ -17,12 +18,15 @@ import { WorklogExportSheet } from "@/features/worklog/WorklogExportSheet"
 import type { ManageJiraScreenProps } from "./manage-types"
 import { useManageJiraModel } from "./useManageJiraModel"
 
-type ManageJiraViewProps = ManageJiraScreenProps & ReturnType<typeof useManageJiraModel>
+type ManageJiraViewProps = ManageJiraScreenProps & ReturnType<typeof useManageJiraModel> & {
+  statusColumns: JiraBoardColumn[]
+  onRequestStatusMove: (keys: string[], target: Pick<JiraBoardColumn, "name" | "statusIds">) => void
+}
 
 export function ManageJiraView(args: ManageJiraViewProps) {
   const [exportOpen, setExportOpen] = useState(false)
   const [exportIssues, setExportIssues] = useState<typeof args.issues>([])
-  const { t, locale, project, boards, selectedBoardId, boardLoading, onBoardChange, sprints, users, issues, selectedKeys, scope, setScope, search, setSearch, loading, message, onRefresh, onMove, onBulkEdit, onWorklog, onPreparePowerTool, savedActions, onUseSavedAction, onDeleteSavedAction, onDeleteView, onOpenIssue, historyCount, onHistory, onDelete, draggedKey, setDraggedKey, overLane, setOverLane, moveTarget, pendingMutation, setPendingMutation, view, setView, sort, setSort, filtersOpen, setFiltersOpen, saveViewOpen, setSaveViewOpen, saveViewName, setSaveViewName, typeFilter, setTypeFilter, priorityFilter, setPriorityFilter, statusFilter, setStatusFilter, assigneeFilter, setAssigneeFilter, sprintFilter, setSprintFilter, labelFilter, setLabelFilter, estimateFilter, setEstimateFilter, myIssuesOnly, setMyIssuesOnly, setPage, pageSize, setPageSize, currentUser, matchingSavedViews, createdIssues, activeFilterCount, visibleIssues, hasActiveFiltering, createdScopeCount, boardScopeCount, pageCount, safePage, pageIssues, groups, allPageSelected, allMatchingSelected, moveItems, toggle, requestMoveSelection, requestAssignToMe, confirmPendingMutation, clearFilters, applySavedView, saveCurrentView, selectPage, selectMatching, filterItems } = args
+  const { t, locale, project, boards, selectedBoardId, boardLoading, onBoardChange, sprints, users, issues, selectedKeys, statusColumns, onRequestStatusMove, scope, setScope, search, setSearch, loading, message, onRefresh, onMove, onBulkEdit, onWorklog, onPreparePowerTool, savedActions, onUseSavedAction, onDeleteSavedAction, onDeleteView, onOpenIssue, historyCount, onHistory, onDelete, draggedKey, setDraggedKey, overLane, setOverLane, moveTarget, pendingMutation, setPendingMutation, view, setView, sort, setSort, filtersOpen, setFiltersOpen, saveViewOpen, setSaveViewOpen, saveViewName, setSaveViewName, typeFilter, setTypeFilter, priorityFilter, setPriorityFilter, statusFilter, setStatusFilter, assigneeFilter, setAssigneeFilter, sprintFilter, setSprintFilter, labelFilter, setLabelFilter, estimateFilter, setEstimateFilter, myIssuesOnly, setMyIssuesOnly, setPage, pageSize, setPageSize, currentUser, matchingSavedViews, createdIssues, activeFilterCount, visibleIssues, hasActiveFiltering, createdScopeCount, boardScopeCount, pageCount, safePage, pageIssues, groups, allPageSelected, allMatchingSelected, moveItems, toggle, toggleRange, requestMoveSelection, requestAssignToMe, confirmPendingMutation, clearFilters, applySavedView, saveCurrentView, selectPage, selectMatching, filterItems } = args
 return (
   <div className="qm-screen animate-in fade-in slide-in-from-bottom-2 duration-200">
     <div className="qm-page-heading qm-page-heading-row flex flex-wrap items-end justify-between gap-4">
@@ -151,8 +155,9 @@ return (
           <Button variant="ghost" size="sm" onClick={selectPage}>{allPageSelected ? t.clearSelection : t.selectVisible}</Button>
           <Button variant="outline" size="sm" disabled={!visibleIssues.length} onClick={() => { setExportIssues(selectedKeys.size ? visibleIssues.filter((issue) => selectedKeys.has(issue.key)) : visibleIssues); setExportOpen(true) }}><Download className="size-3.5" />{locale === "fa" ? "خروجی برای AI" : "Export for AI"}</Button>
           {visibleIssues.length > pageIssues.length ? <Button variant="ghost" size="sm" onClick={selectMatching}>{allMatchingSelected ? t.clearSelection : `${t.selectMatching} (${visibleIssues.length})`}</Button> : null}
-          <div className="ms-auto hidden items-center gap-2 lg:flex">
-            <SimpleSelect value={moveTarget} onValueChange={requestMoveSelection} className="min-w-[220px]" placeholder={t.moveSelected} disabled={!selectedKeys.size} items={moveItems} />
+          <div className="ms-auto flex flex-wrap items-center gap-2">
+            <SimpleSelect ariaLabel={locale === "fa" ? "انتقال به اسپرینت یا بک‌لاگ" : "Move to sprint or backlog"} value={moveTarget} onValueChange={requestMoveSelection} className="min-w-[180px]" placeholder={t.moveSelected} disabled={!selectedKeys.size} items={moveItems} />
+            <SimpleSelect ariaLabel={locale === "fa" ? "انتقال انتخاب‌شده‌ها به وضعیت" : "Move selected issues to status"} value="" className="min-w-[170px]" placeholder={locale === "fa" ? "انتقال به وضعیت…" : "Move to status…"} disabled={!selectedKeys.size || !args.onTransitionStatuses} items={statusColumns.map((column) => ({ value: column.id, label: column.name }))} onValueChange={(value) => { const target = statusColumns.find((column) => column.id === value); if (target) onRequestStatusMove(Array.from(selectedKeys), target) }} />
             <Button variant="outline" size="sm" onClick={requestAssignToMe} disabled={!selectedKeys.size || !currentUser}><UserCheck className="size-4" />{t.assignToMe}</Button>
             <Button variant="outline" size="sm" onClick={onBulkEdit} disabled={!selectedKeys.size}><UsersRound className="size-4" />{t.bulkEdit}</Button>
             <Button variant="outline" size="sm" onClick={onWorklog} disabled={!selectedKeys.size}><TimerReset className="size-4" />{locale === "fa" ? "ثبت زمان" : "Log work"}</Button>
@@ -190,7 +195,7 @@ return (
               <span /><span>Key</span><span>{t.summary}</span><span>{t.status}</span><span>{t.assignee}</span><span>{t.placement}</span><span>{t.estimate}</span><span />
             </div>
             <div className="divide-y">
-              {pageIssues.map((issue) => <LiveIssueListRow key={issue.key} issue={issue} selected={selectedKeys.has(issue.key)} locale={locale} t={t} onToggle={() => toggle(issue.key)} onOpenDetails={() => onOpenIssue(issue.key)} />)}
+              {pageIssues.map((issue) => <LiveIssueListRow key={issue.key} issue={issue} selected={selectedKeys.has(issue.key)} locale={locale} t={t} onToggle={() => toggle(issue.key)} onSelectRange={() => toggleRange(issue.key)} onOpenDetails={() => onOpenIssue(issue.key)} />)}
             </div>
             <div className="flex flex-col gap-2 border-t bg-muted/10 p-2.5 sm:flex-row sm:items-center">
               <div className="text-xs text-muted-foreground">{visibleIssues.length} {t.issues} · {t.page} {safePage} {t.of} {pageCount}</div>
@@ -235,6 +240,7 @@ return (
                         selected={selectedKeys.has(issue.key)}
                         locale={locale}
                         onToggle={() => toggle(issue.key)}
+                        onSelectRange={() => toggleRange(issue.key)}
                         onOpenDetails={() => onOpenIssue(issue.key)}
                         onDragStart={() => setDraggedKey(issue.key)}
                         onDragEnd={() => { setDraggedKey(null); setOverLane(null) }}
@@ -249,6 +255,7 @@ return (
       </div>
     </section>
 
+    <WorklogExportSheet open={exportOpen} onOpenChange={setExportOpen} locale={locale} issues={exportIssues} filename="queuemint-jira-issues.json" buildPackage={() => buildManageJiraAiPackage(exportIssues, project?.key, selectedBoardId)} />
     <ManageMutationConfirmDialog
       locale={locale}
       pending={pendingMutation}

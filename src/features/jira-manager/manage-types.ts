@@ -1,7 +1,7 @@
 import type { Dispatch, SetStateAction } from "react"
 import { copy } from "@/features/app-shell/app-copy"
 import type { SavedIssueView, SavedWorkspaceAction } from "@/lib/storage"
-import type { AppLocale, JiraBoard, JiraLiveIssue, JiraMetadata, JiraPriority, JiraProject, JiraSprint, JiraUser } from "@/types"
+import type { AppLocale, JiraBoard, JiraBoardColumn, JiraBulkStatusResult, JiraLiveIssue, JiraMetadata, JiraPriority, JiraProject, JiraSprint, JiraUser } from "@/types"
 import type { JiraPowerToolPreparation } from "./power-tools"
 
 export type ManageScope = "created" | "board"
@@ -48,6 +48,7 @@ export type ManageJiraScreenProps = {
   message: string | null
   onRefresh: () => void
   onMove: (keys: string[], sprintId: number | null) => void
+  onTransitionStatuses?: (keys: string[], target: Pick<JiraBoardColumn, "name" | "statusIds">) => Promise<JiraBulkStatusResult>
   onAssignToMe: () => void
   onBulkEdit: () => void
   onWorklog: () => void
