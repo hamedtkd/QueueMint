@@ -72,6 +72,22 @@ At minimum:
 - portable backup export/import restores preferences and reusable workflows without exporting the Smart Assistant API key
 - active sprint summary copies a short shareable text
 
+## v1.6.0 release-specific acceptance
+
+Before tagging v1.6.0, record the tested Chrome/Edge version and Jira Cloud/DC environment, plus pass/fail evidence for:
+
+- The exact release-candidate ZIP installs from a clean browser profile; its manifest is at the ZIP root.
+- Upgrade from v1.5.1 preserves local preferences, capture drafts, saved views/actions, and Jira connection.
+- Worklog exported JSON always includes complete Jira Description fields; images remain excluded unless explicitly enabled.
+- With image export enabled, confirm attachment content, image limits, and unavailable-image reporting in both Worklog and Manage Jira.
+- Select 10 cards; verify Ctrl/Cmd and Shift selection, drag the selection between Jira status columns, and verify the Move to status menu.
+- Verify the five-column board at common desktop widths: empty lanes remain usable, horizontal navigation is visible, and Worklog Draft is accessible.
+- Verify Jira transitions respect permissions and workflow restrictions, partial failures are reported without false success, and failed items can be retried.
+- Verify the existing single-card drag, sprint/backlog moves, worklog submission, Quick Issue, and Capture/Jira evidence upload still work.
+- Review unchanged required/optional host permissions and confirm there are no additional remote script permissions.
+
+The source/CI release candidate can be prepared before these manual checks. **Do not create the final v1.6.0 tag or publish the GitHub/Chrome Web Store release until the above are recorded as passed.**
+
 ## Git release
 
 After merge to main:
